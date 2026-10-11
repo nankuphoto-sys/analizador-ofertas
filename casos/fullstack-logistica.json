@@ -1,0 +1,13 @@
+{
+  "hoja_de_vida": "ejemplos/hoja-de-vida-laura.txt",
+  "verificaciones": [
+    { "nombre": "4+ años de desarrollo web", "buscar": ["desarrollo web", "anos de experiencia", "4 anos"], "excluir": ["react", "node"], "aceptables": ["parcial", "no_cumple"] },
+    { "nombre": "Node.js (Express o NestJS)", "buscar": ["node", "express", "nestjs"], "aceptables": ["no_cumple"] },
+    { "nombre": "PostgreSQL", "buscar": ["postgresql", "postgres", "relacional"], "aceptables": ["no_cumple"] },
+    { "nombre": "React", "buscar": ["react"], "excluir": ["native"], "aceptables": ["cumple"] },
+    { "nombre": "Docker", "buscar": ["docker", "contenedor"], "aceptables": ["no_cumple"] },
+    { "nombre": "AWS", "buscar": ["aws"], "aceptables": ["no_cumple"] },
+    { "nombre": "TypeScript", "buscar": ["typescript"], "aceptables": ["cumple"] },
+    { "nombre": "React Native", "buscar": ["react native"], "aceptables": ["parcial", "no_cumple"] }
+  ]
+}

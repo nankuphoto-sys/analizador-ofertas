@@ -1,0 +1,30 @@
+Laura Gómez Ruiz
+Desarrolladora Frontend · React · TypeScript
+Medellín, Colombia · laura.gomez.dev@example.com · (persona ficticia, hoja de vida de ejemplo)
+
+PERFIL
+Desarrolladora frontend con experiencia construyendo tiendas en línea con React y TypeScript. Me enfoco en el rendimiento y en pruebas de componentes.
+
+EXPERIENCIA
+Desarrolladora Frontend — Tiendas Aurora (comercio electrónico) · mar. 2024 – actualidad
+- Construí el catálogo y el carrito de compras con React, TypeScript y Redux Toolkit.
+- Reduje el tiempo de carga de la página de producto de 4,1 s a 1,8 s.
+- Pruebas de componentes con Jest y React Testing Library: 140 pruebas en GitHub Actions.
+- Consumo de API REST y GraphQL con Apollo Client.
+
+Practicante de Desarrollo Web — Agencia Pixel · jul. 2023 – feb. 2024
+- Sitios en WordPress y maquetación con HTML, CSS y JavaScript.
+- Diseño responsive con Tailwind CSS.
+- Apoyo en la integración de pagos con Mercado Pago.
+
+PROYECTOS
+Recetario — aplicación con Next.js y Firebase (autenticación y Firestore), desplegada en Vercel.
+
+HABILIDADES
+React, TypeScript, JavaScript, Next.js, Redux Toolkit, HTML, CSS, Tailwind CSS, Jest, React Testing Library, GraphQL, Apollo Client, Git, GitHub Actions, Figma, Firebase
+
+FORMACIÓN
+Tecnóloga en Análisis y Desarrollo de Software, SENA (2023)
+
+IDIOMAS
+Español nativo · Inglés intermedio (B1)

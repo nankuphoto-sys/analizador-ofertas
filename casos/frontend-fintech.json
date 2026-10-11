@@ -1,0 +1,14 @@
+{
+  "hoja_de_vida": "ejemplos/hoja-de-vida-laura.txt",
+  "verificaciones": [
+    { "nombre": "React 2+ años", "buscar": ["react"], "excluir": ["native", "testing library"], "aceptables": ["cumple"] },
+    { "nombre": "TypeScript", "buscar": ["typescript"], "aceptables": ["cumple"] },
+    { "nombre": "Pruebas (Jest/RTL)", "buscar": ["jest", "testing library", "prueba"], "aceptables": ["cumple"] },
+    { "nombre": "APIs REST", "buscar": ["rest"], "aceptables": ["cumple"] },
+    { "nombre": "Git", "buscar": ["git"], "aceptables": ["cumple"] },
+    { "nombre": "Next.js", "buscar": ["next js", "nextjs"], "aceptables": ["cumple"] },
+    { "nombre": "GraphQL", "buscar": ["graphql"], "aceptables": ["cumple"] },
+    { "nombre": "Fintech o banca", "buscar": ["fintech", "banca", "financiero"], "aceptables": ["no_cumple", "parcial"] },
+    { "nombre": "Inglés intermedio", "buscar": ["ingles"], "aceptables": ["cumple"] }
+  ]
+}

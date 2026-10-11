@@ -1,0 +1,11 @@
+{
+  "hoja_de_vida": "ejemplos/hoja-de-vida-laura.txt",
+  "verificaciones": [
+    { "nombre": "Python", "buscar": ["python"], "aceptables": ["no_cumple"] },
+    { "nombre": "LangChain o LangGraph", "buscar": ["langchain", "langgraph"], "aceptables": ["no_cumple"] },
+    { "nombre": "RAG y bases vectoriales", "buscar": ["rag", "vectorial"], "aceptables": ["no_cumple"] },
+    { "nombre": "APIs de LLM", "buscar": ["llm", "openai", "anthropic"], "aceptables": ["no_cumple"] },
+    { "nombre": "Inglés C1", "buscar": ["ingles"], "aceptables": ["parcial", "no_cumple"] },
+    { "nombre": "React para interfaces", "buscar": ["react"], "aceptables": ["cumple"] }
+  ]
+}

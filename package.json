@@ -1,0 +1,28 @@
+{
+  "name": "analizador-ofertas",
+  "version": "1.0.0",
+  "description": "Agente con LangChain.js que compara una oferta de trabajo con una hoja de vida, prueba cada requisito con una cita literal y calcula el encaje",
+  "scripts": {
+    "test": "vitest run",
+    "analizar": "tsx src/analizar.ts",
+    "evaluar": "tsx src/evaluar.ts",
+    "typecheck": "tsc"
+  },
+  "author": "Jonathan Mena Ríos",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  },
+  "dependencies": {
+    "@langchain/anthropic": "^1.5.12",
+    "@langchain/core": "^1.2.17",
+    "dotenv": "^18.0.7",
+    "langchain": "^1.5.16",
+    "pdf-parse": "^2.4.5",
+    "zod": "^4.6.5"
+  }
+}

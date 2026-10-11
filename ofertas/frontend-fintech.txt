@@ -1,0 +1,23 @@
+Desarrollador(a) Frontend Semi Senior — Finaxis (oferta de ejemplo, empresa ficticia)
+Remoto desde Colombia · Tiempo completo
+
+Somos una fintech que ayuda a pequeñas empresas a gestionar sus pagos. Buscamos a alguien que se una a nuestro equipo de producto.
+
+Lo que harás:
+- Construir nuevas pantallas de nuestra plataforma web.
+- Mejorar el rendimiento y la accesibilidad de la aplicación.
+
+Requisitos:
+- 2 años o más de experiencia con React.
+- Dominio de TypeScript.
+- Pruebas automatizadas con Jest o React Testing Library.
+- Consumo de APIs REST.
+- Manejo de Git.
+
+Deseable:
+- Experiencia con Next.js.
+- Conocimiento de GraphQL.
+- Experiencia previa en fintech o banca.
+- Inglés intermedio.
+
+Ofrecemos: salario competitivo, horario flexible y presupuesto para formación.

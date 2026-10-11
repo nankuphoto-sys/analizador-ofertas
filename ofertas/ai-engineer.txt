@@ -1,0 +1,16 @@
+AI Engineer — Cognia Labs (oferta de ejemplo, empresa ficticia)
+Remoto
+
+Construimos asistentes de IA para equipos de atención al cliente.
+
+Requisitos:
+- Python avanzado.
+- Experiencia con LangChain o LangGraph.
+- Sistemas RAG con bases de datos vectoriales.
+- Integración con APIs de LLM (OpenAI o Anthropic).
+- Inglés avanzado (C1): todas las reuniones son en inglés.
+
+Valoramos:
+- Saber construir interfaces con React para mostrar los resultados.
+
+Ofrecemos pago en dólares y trabajo 100 % remoto.

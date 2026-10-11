@@ -1,0 +1,10 @@
+{
+  "hoja_de_vida": "ejemplos/hoja-de-vida-laura.txt",
+  "verificaciones": [
+    { "nombre": "Figma", "buscar": ["figma"], "aceptables": ["cumple", "parcial"] },
+    { "nombre": "Investigación con usuarios", "buscar": ["investigacion", "usuario", "usabilidad"], "aceptables": ["no_cumple"] },
+    { "nombre": "Prototipado de alta fidelidad", "buscar": ["prototip"], "aceptables": ["no_cumple", "parcial"] },
+    { "nombre": "Portafolio de diseño", "buscar": ["portafolio", "caso de estudio", "casos de estudio"], "aceptables": ["no_cumple"] },
+    { "nombre": "HTML y CSS", "buscar": ["html", "css"], "aceptables": ["cumple"] }
+  ]
+}

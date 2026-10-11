@@ -1,0 +1,18 @@
+Full Stack Developer — Rutaviva (oferta de ejemplo, empresa ficticia)
+Remoto LATAM
+
+Rutaviva optimiza rutas de entrega para empresas de logística. Estamos creciendo y buscamos un desarrollador full stack.
+
+Requisitos indispensables:
+- 4 años o más de experiencia en desarrollo web.
+- Backend con Node.js (Express o NestJS).
+- Bases de datos relacionales, en especial PostgreSQL.
+- Frontend con React.
+- Contenedores con Docker.
+
+Será un plus:
+- Experiencia en AWS.
+- TypeScript.
+- React Native para nuestra app de conductores.
+
+Beneficios: días libres extra, equipo de trabajo y bono anual.

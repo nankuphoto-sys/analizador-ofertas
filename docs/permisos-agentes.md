@@ -16,7 +16,7 @@ Cada agente tiene acceso solo a lo que necesita para su tarea. Esto se aplica en
 
 | Agente | Herramientas | Lee | Escribe | Comandos | Web |
 | --- | --- | --- | --- | --- | --- |
-| **analizador-ofertas** (jefe) | Agent(4 miembros), Bash, Read, Grep, Glob, Edit, Write | todo el proyecto menos `.env` y `.claude/` | `src/**/*.ts`, `tests/**/*.ts`, `greenhouse-empresas.json` | `npm run buscar/analizar/oferta/olvidar/typecheck`, `npm test` | no |
+| **analizador-ofertas** (jefe) | Agent(4 miembros), Bash, Read, Grep, Glob, Edit, Write | todo el proyecto menos `.env` y `.claude/` | `src/**/*.ts`, `tests/**/*.ts`, `greenhouse-empresas.json` | `npm run buscar/analizar/oferta/olvidar/typecheck` (y sus variantes `:prod`; ver [entornos.md](entornos.md)), `npm test` | no |
 | **auditor-fuentes** | Read, Grep, Bash, Edit, WebFetch | `src/fuentes/`, sus pruebas, `greenhouse-empresas.json`, `package.json` | lo mismo, menos `package.json` | solo la búsqueda de prueba, `typecheck` y `npm test` | solo getonbrd.com, remotive.com, greenhouse.io |
 | **afinador-prefiltro** | Read, Glob | `src/prefiltro.ts`, su prueba, `salidas/busqueda-*.md`, `memoria/memoria.json` | nada | ninguno | no |
 | **explorador-plataformas** | WebSearch, WebFetch, Read | `src/fuentes/`, `greenhouse-empresas.json` | nada | ninguno | sí (es su trabajo) |

@@ -23,8 +23,9 @@ export const POLITICAS = {
     explorar: [/^(?!\.claude(\/|$))/],
     escribir: [/^src\/.+\.ts$/, /^tests\/.+\.ts$/, /^greenhouse-empresas\.json$/],
     comandos: [
-      /^npm run (buscar|analizar|oferta|olvidar|verificar-carta) -- .+$/,
-      /^npm run oferta -- --lista( --estado=\w+)?$/,
+      // Con ":prod" corre en producción (tu hoja de vida y tu memoria reales); sin sufijo corre en desarrollo, sin llave.
+      /^npm run (buscar|analizar|oferta|olvidar|verificar-carta)(:prod)? -- .+$/,
+      /^npm run oferta(:prod)? -- --lista( --estado=\w+)?$/,
       /^npm run typecheck$/,
       /^npm test( -- [\w./-]+)?$/,
     ],
@@ -125,10 +126,10 @@ function revisarComando(politica, agente, comando) {
   if (agente !== "analizador-ofertas") return ok;
 
   // Lo que el jefe puede correr pero solo con el «sí» del usuario (ver docs/jerarquia-agentes.md).
-  if (/^npm run olvidar /.test(c)) return ask("Borrar memoria o caché necesita tu aprobación.");
-  if (/^npm run oferta -- \S+ (postulada|descartada|guardada)\b/.test(c)) return ask("Cambiar el estado de una oferta necesita tu aprobación.");
+  if (/^npm run olvidar(:prod)? /.test(c)) return ask("Borrar memoria o caché necesita tu aprobación.");
+  if (/^npm run oferta(:prod)? -- \S+ (postulada|descartada|guardada)\b/.test(c)) return ask("Cambiar el estado de una oferta necesita tu aprobación.");
   const analizar = /--analizar=(\d+)/.exec(c);
-  if (/^npm run buscar /.test(c) && (/--sin-cache\b/.test(c) || (analizar && Number(analizar[1]) > 10))) {
+  if (/^npm run buscar(:prod)? /.test(c) && (/--sin-cache\b/.test(c) || (analizar && Number(analizar[1]) > 10))) {
     return ask("Esta búsqueda gasta de más (--sin-cache o --analizar mayor a 10): necesita tu aprobación.");
   }
   return ok;

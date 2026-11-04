@@ -1,8 +1,9 @@
-import "dotenv/config";
+import "./iniciar.js";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { analizarConPresupuesto, modeloActual, VERSION_PROMPT } from "./agente.js";
 import { opcionEntera } from "./argumentos.js";
+import { comandoNpm, ENTORNO, RUTAS } from "./entorno.js";
 import { type Estado, leerLimites, PresupuestoAgotado } from "./gasto.js";
 import { leerDocumento } from "./documentos.js";
 import type { Resultado } from "./esquema.js";
@@ -88,7 +89,7 @@ if (desconocidas.length > 0 || nombresFuentes.length === 0) {
 }
 const fuentesActivas = fuentes.filter((f) => nombresFuentes.includes(f.nombre));
 if (cuantasAnalizar > 0 && !process.env.ANTHROPIC_API_KEY) {
-  console.error("Falta ANTHROPIC_API_KEY (o usa --analizar=0 para ver solo el filtro sin IA).");
+  console.error(`Falta ANTHROPIC_API_KEY en el entorno ${ENTORNO} (o usa --analizar=0 para ver solo el filtro sin IA). Desarrollo no tiene llave a propósito: usa ${comandoNpm("buscar", "test")} o ${comandoNpm("buscar", "production")}.`);
   process.exit(1);
 }
 
@@ -249,12 +250,12 @@ for (const c of ordenadas.filter((x) => analisis.has(x.oferta.id))) {
     `- **Palabras clave que no tienes:** ${r.palabras_clave_faltantes.join(", ") || "ninguna"}`,
     `- **Qué destacar:** ${r.que_destacar.join(" / ")}`,
     ...(r.advertencias.length ? [`- **Advertencias:** ${r.advertencias.join(" / ")}`] : []),
-    `- **Ya te postulaste o no te interesa:** \`npm run oferta -- ${c.oferta.id} postulada\` (o \`descartada\`)`,
+    `- **Ya te postulaste o no te interesa:** \`${comandoNpm("oferta")} -- ${c.oferta.id} postulada\` (o \`descartada\`)`,
   );
 }
-const destino = join("salidas", nombreReporte(ahora));
+const destino = join(RUTAS.salidas, nombreReporte(ahora));
 if (!prueba) {
-  await mkdir("salidas", { recursive: true });
+  await mkdir(RUTAS.salidas, { recursive: true });
   await writeFile(destino, lineas.join("\n"));
 
   // 5. Guardar memoria: las candidatas mostradas quedan como vistas, más los análisis nuevos.

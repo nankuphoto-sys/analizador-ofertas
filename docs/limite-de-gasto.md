@@ -21,7 +21,7 @@ Cada análisis de una oferta llama a la API de Anthropic y cuesta dinero. El pro
 ## 3. Presupuesto por día y por mes (`src/gasto.ts`)
 
 - En `.env`: `LIMITE_USD_DIA` (por defecto US$ 2) y `LIMITE_USD_MES` (por defecto US$ 20).
-- Lo gastado se anota en `memoria/gasto.json` después de cada análisis, en dólares, por día y en tu hora local. Ese archivo no se sube a git.
+- Lo gastado se anota en `memoria/gasto.json` (en producción; `datos/<entorno>/memoria/gasto.json` en pruebas) después de cada análisis, en dólares, por día y en tu hora local. Cada entorno lleva su propio registro y sus propios límites en su `.env.<entorno>` (ver [entornos.md](entornos.md)). Ese archivo no se sube a git.
 - **Antes** de cada análisis se revisa: lo gastado hoy (o este mes) **más** lo que suele costar un análisis no puede pasar el límite. Se frena antes de pasarse, no después.
   - «Lo que suele costar» es lo mayor entre el promedio de tus análisis y el más caro de los últimos 10. Mientras no hay historial se usa US$ 0,15.
   - Antes se reservaba solo el promedio. Una oferta larga cuesta el doble que una corta (US$ 0,21 contra 0,10 en noviembre de 2026), así que con el promedio se podía pasar del límite.

@@ -1,4 +1,6 @@
+import "./iniciar.js";
 import { rm } from "node:fs/promises";
+import { ENTORNO } from "./entorno.js";
 import { cargarMemoria, guardarMemoria, olvidar, RUTA_MEMORIA } from "./memoria.js";
 
 /**
@@ -12,6 +14,11 @@ const args = process.argv.slice(2);
 const ofertaId = args.find((a) => a.startsWith("--oferta="))?.slice("--oferta=".length);
 
 if (args.includes("--todo")) {
+  // En producción esta memoria es tu historial real de postulaciones: borrarla pide una confirmación explícita.
+  if (ENTORNO === "production" && !args.includes("--confirmar")) {
+    console.error(`Esto borra todo tu historial real (${RUTA_MEMORIA}). Si estás seguro, repite el comando con --confirmar.`);
+    process.exit(1);
+  }
   await rm(RUTA_MEMORIA, { force: true });
   console.log(`Memoria borrada (${RUTA_MEMORIA}).`);
   process.exit(0);

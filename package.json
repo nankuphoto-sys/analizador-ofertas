@@ -4,12 +4,20 @@
   "description": "Agente con LangChain.js que compara una oferta de trabajo con una hoja de vida, prueba cada requisito con una cita literal y calcula el encaje",
   "scripts": {
     "test": "vitest run",
-    "analizar": "tsx src/analizar.ts",
-    "evaluar": "tsx src/evaluar.ts",
     "typecheck": "tsc",
+    "analizar": "tsx src/analizar.ts",
+    "analizar:test": "cross-env APP_ENV=test tsx src/analizar.ts",
+    "analizar:prod": "cross-env APP_ENV=production tsx src/analizar.ts",
     "buscar": "tsx src/buscar.ts",
+    "buscar:test": "cross-env APP_ENV=test tsx src/buscar.ts",
+    "buscar:prod": "cross-env APP_ENV=production tsx src/buscar.ts",
     "oferta": "tsx src/oferta.ts",
+    "oferta:test": "cross-env APP_ENV=test tsx src/oferta.ts",
+    "oferta:prod": "cross-env APP_ENV=production tsx src/oferta.ts",
     "olvidar": "tsx src/olvidar.ts",
+    "olvidar:test": "cross-env APP_ENV=test tsx src/olvidar.ts",
+    "olvidar:prod": "cross-env APP_ENV=production tsx src/olvidar.ts",
+    "evaluar": "cross-env APP_ENV=test tsx src/evaluar.ts",
     "verificar-carta": "tsx src/verificarCarta.ts"
   },
   "author": "Jonathan Mena Ríos",
@@ -17,6 +25,7 @@
   "type": "module",
   "devDependencies": {
     "@types/node": "^26.6.5",
+    "cross-env": "^10.1.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"
@@ -28,5 +37,8 @@
     "langchain": "^1.5.16",
     "pdf-parse": "^2.4.5",
     "zod": "^4.6.5"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
   }
 }

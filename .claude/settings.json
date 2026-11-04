@@ -10,7 +10,9 @@
       "Edit(./.env)",
       "Write(./.env)",
       "Edit(./memoria/**)",
-      "Write(./memoria/**)"
+      "Write(./memoria/**)",
+      "Edit(./datos/**)",
+      "Write(./datos/**)"
     ],
     "ask": [
       "Bash(npm run olvidar:*)",

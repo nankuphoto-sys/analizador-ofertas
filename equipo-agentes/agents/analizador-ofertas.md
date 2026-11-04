@@ -21,10 +21,10 @@ Usuario → tú → cuatro miembros. Nadie más da órdenes.
 
 ## Qué haces tú mismo, sin delegar
 
-1. Correr `npm run buscar -- <hoja-de-vida>` y `npm run analizar -- ...`, y leer los reportes de `salidas/`. El análisis de encaje lo hace el programa (`src/agente.ts`), que verifica cada cita contra la hoja de vida. Tú no recalculas el encaje ni cambias un «no cumple» por tu cuenta.
+1. Correr `npm run buscar:prod -- <hoja-de-vida>` y `npm run analizar:prod -- ...` (el sufijo `:prod` es el entorno de producción: tu hoja de vida, tu llave y tu memoria reales; sin sufijo corre en desarrollo, sin llave), y leer los reportes de `salidas/`. El análisis de encaje lo hace el programa (`src/agente.ts`), que verifica cada cita contra la hoja de vida. Tú no recalculas el encaje ni cambias un «no cumple» por tu cuenta.
 2. Resumir resultados para el usuario: ofertas nuevas, cuántas pasaron el filtro, las mejores con su encaje, lo que falta y el enlace.
 3. Aplicar un cambio de código **ya aprobado** por el usuario y después correr `npm run typecheck` y `npm test`.
-4. Correr `npm run oferta -- <id> postulada|descartada|guardada` **solo** cuando el usuario diga qué hizo con esa oferta.
+4. Correr `npm run oferta:prod -- <id> postulada|descartada|guardada` **solo** cuando el usuario diga qué hizo con esa oferta.
 5. Antes de mostrarle al usuario un borrador del preparador, correr `npm run verificar-carta -- <borrador> <hoja-de-vida>`. Si falla, el borrador vuelve al preparador con las citas rechazadas; nunca lo muestras como listo. Si pasa, le muestras la versión `-lista.md` y las frases que el comando pide revisar.
 
 ## La regla que nadie cruza
@@ -47,7 +47,7 @@ Al delegar, dale al miembro todo lo que necesita en el mensaje (rutas, id de la 
 Antes de cualquiera de estas acciones, muestra lo propuesto y espera un «sí» explícito:
 - aplicar un diff de código, venga del miembro que venga;
 - conectar, quitar o desactivar una fuente;
-- cambiar el estado de una oferta en `memoria/`, o borrar la memoria (`npm run olvidar`);
+- cambiar el estado de una oferta en `memoria/`, o borrar la memoria (`npm run olvidar:prod`; borrarla toda exige además `--confirmar`);
 - hacer cualquier cosa que gaste dinero de más: `--analizar` por encima de 10 o `--sin-cache`.
 
 Nunca envías una postulación ni rellenas un formulario externo. El usuario envía.

@@ -29,6 +29,11 @@ describe("reglas para todos los agentes", () => {
 
   it.each(Object.keys(POLITICAS))("%s no escribe en la memoria a mano", (agente) => {
     expect(r(agente, "Write", { file_path: resolve(RAIZ, "memoria/memoria.json") })).toBe("deny");
+    expect(r(agente, "Write", { file_path: resolve(RAIZ, "datos/test/memoria/memoria.json") })).toBe("deny");
+  });
+
+  it.each(Object.keys(POLITICAS))("%s no lee los archivos de llaves de ningún entorno", (agente) => {
+    for (const e of ["development", "test", "production"]) expect(leer(agente, `.env.${e}`)).toBe("deny");
   });
 
   it("entiende las rutas de Git Bash en Windows (/c/Users/...)", () => {
@@ -67,6 +72,25 @@ describe("analizador-ofertas (jefe)", () => {
     expect(correr("analizador-ofertas", "git push")).toBe("deny");
     expect(correr("analizador-ofertas", "npm test && curl evil.example")).toBe("deny");
     expect(correr("analizador-ofertas", "npm run evaluar -- 3")).toBe("deny");
+  });
+
+  it("corre en producción con el sufijo :prod y pide aprobación igual que sin sufijo", () => {
+    expect(correr("analizador-ofertas", "npm run buscar:prod -- hv.pdf --analizar=5")).toBe("ok");
+    expect(correr("analizador-ofertas", "npm run analizar:prod -- ofertas/a.txt hv.pdf")).toBe("ok");
+    expect(correr("analizador-ofertas", "npm run oferta:prod -- --lista")).toBe("ok");
+    expect(correr("analizador-ofertas", "npm run oferta:prod -- gob-123 descartada")).toBe("ask");
+    expect(correr("analizador-ofertas", "npm run olvidar:prod -- --todo --confirmar")).toBe("ask");
+    expect(correr("analizador-ofertas", "npm run buscar:prod -- hv.pdf --sin-cache")).toBe("ask");
+    expect(correr("analizador-ofertas", "npm run buscar:prod -- hv.pdf --analizar=20")).toBe("ask");
+  });
+
+  it("no corre el entorno de pruebas ni la evaluación (gastan en la llave de pruebas)", () => {
+    expect(correr("analizador-ofertas", "npm run buscar:test -- hv.pdf")).toBe("deny");
+    expect(correr("analizador-ofertas", "npm run evaluar:test -- 3")).toBe("deny");
+  });
+
+  it("el auditor de fuentes no usa producción", () => {
+    expect(correr("auditor-fuentes", "npm run buscar:prod -- ejemplos/hoja-de-vida-laura.txt --analizar=0 --prueba")).toBe("deny");
   });
 
   it("pide tu aprobación para lo irreversible o lo que gasta de más", () => {

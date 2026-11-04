@@ -1,7 +1,15 @@
 node_modules/
+# Llaves: .env y uno por entorno (.env.development, .env.test, .env.production). Solo .env.example se sube.
 .env
+.env.*
+!.env.example
 salidas/
 memoria/
+# Datos de los entornos de desarrollo y pruebas (producción usa memoria/ y salidas/)
+datos/
+# Hojas de vida reales: datos personales, nunca al repositorio (la de ejemplo es ejemplos/hoja-de-vida-laura.txt)
+*.pdf
+*.docx
 # Herramientas y editor (locales, no son parte del proyecto)
 .playwright-mcp/
 .vscode/

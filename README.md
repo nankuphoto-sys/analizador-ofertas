@@ -34,15 +34,19 @@ oferta + hoja de vida ──> agente (Claude) ──> buscar_en_hoja_de_vida ─
 
 ```bash
 npm install
-cp .env.example .env   # luego edita .env y pon tu ANTHROPIC_API_KEY
+cp .env.example .env.production   # luego edita .env.production y pon tu ANTHROPIC_API_KEY
 ```
+
+### Entornos
+
+El proyecto separa **desarrollo**, **pruebas** y **producción**, cada uno con sus llaves y sus datos ([docs/entornos.md](docs/entornos.md)). Un comando sin sufijo corre en **desarrollo**, que no tiene llave a propósito: sirve para `npm test` y para probar el filtro con `--analizar=0`. Para tu búsqueda real usa el sufijo `:prod` (`npm run buscar:prod`, `oferta:prod`, `olvidar:prod`, `analizar:prod`). Las pruebas con IA usan `npm run evaluar` y los scripts `:test`, con `.env.test`.
 
 ## Uso
 
 Copia el texto de la oferta (de Get on Board, LinkedIn, etc.) en un archivo `.txt` y pásalo junto con tu hoja de vida en PDF o texto:
 
 ```bash
-npm run analizar -- ofertas/fullstack-logistica.txt ejemplos/hoja-de-vida-laura.txt
+npm run analizar:test -- ofertas/fullstack-logistica.txt ejemplos/hoja-de-vida-laura.txt   # entorno de pruebas (con tu hoja real: analizar:prod)
 ```
 
 Salida (resumida):
@@ -69,9 +73,11 @@ El JSON completo queda en `salidas/`.
 ## Buscar ofertas automáticamente
 
 ```bash
-npm run buscar -- mi-hoja-de-vida.pdf               # busca, filtra y analiza las 5 mejores
-npm run buscar -- mi-hoja-de-vida.pdf --analizar=0  # solo el filtro, sin gastar créditos
+npm run buscar:prod -- mi-hoja-de-vida.pdf               # busca, filtra y analiza las 5 mejores
+npm run buscar:prod -- mi-hoja-de-vida.pdf --analizar=0  # solo el filtro, sin gastar créditos
 ```
+
+(Las demás líneas de esta sección usan `npm run buscar` sin sufijo para abreviar; para tu búsqueda real agrega `:prod`.)
 
 Busca en varias fuentes (carpeta `src/fuentes/`) y trabaja en dos pasadas para no gastar de más:
 
@@ -142,17 +148,17 @@ La búsqueda y `npm run analizar` muestran cuánto costó cada análisis y cuán
 
 ### Memoria entre búsquedas
 
-La búsqueda recuerda, en `memoria/memoria.json` (local, ignorado por git):
+La búsqueda recuerda, en `memoria/memoria.json` en producción (y en `datos/<entorno>/memoria/` en los otros entornos; local, ignorado por git):
 
 - **Qué ofertas ya viste**: el reporte marca con 🆕 las nuevas desde la última búsqueda.
 - **Tus decisiones**: las ofertas a las que te postulaste o que descartaste no vuelven a salir.
 - **Los análisis ya hechos**: no se pagan dos veces. Se vuelven a pedir solos si cambia tu hoja de vida, el prompt o el modelo.
 
 ```bash
-npm run oferta -- <id> postulada              # o descartada, guardada; el id sale en el reporte
-npm run oferta -- <id> descartada --motivo="no es remoto de verdad"
-npm run oferta -- --lista                     # historial (--estado=postulada para filtrar)
-npm run olvidar -- --cache                    # borra los análisis guardados; también --oferta=<id> o --todo
+npm run oferta:prod -- <id> postulada         # o descartada, guardada; el id sale en el reporte
+npm run oferta:prod -- <id> descartada --motivo="no es remoto de verdad"
+npm run oferta:prod -- --lista                # historial (--estado=postulada para filtrar)
+npm run olvidar:prod -- --cache               # borra los análisis guardados; también --oferta=<id> o --todo --confirmar
 ```
 
 Qué se guarda, qué no y por qué: [docs/memoria.md](docs/memoria.md).
@@ -163,7 +169,7 @@ Lo que se encontró al usarlo (octubre 2026): de ~550 ofertas de desarrollo en G
 
 ```bash
 npm test               # pruebas sin IA: búsqueda, verificación de evidencias, encaje y puntaje (no gastan créditos)
-npm run evaluar -- 3   # corre el agente 3 veces por oferta y mide aciertos e invenciones
+npm run evaluar -- 3   # corre el agente 3 veces por oferta y mide aciertos e invenciones (entorno de pruebas: .env.test)
 ```
 
 La evaluación compara la salida del agente con lo que debería concluir para cada requisito, escrito a mano en `casos/<oferta>.json`. Cuando hay una ambigüedad real (la candidata tiene unos 3 años y la oferta pide 4) se acepta más de una respuesta, pero **nunca "cumple" si no se cumple**.

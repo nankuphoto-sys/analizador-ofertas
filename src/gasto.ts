@@ -1,6 +1,7 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import * as z from "zod";
+import { RUTAS } from "./entorno.js";
 
 /**
  * Límite de gasto en la API de Anthropic (ver docs/limite-de-gasto.md).
@@ -9,7 +10,7 @@ import * as z from "zod";
  * se revisa que el gasto de hoy y del mes, más lo que suele costar un análisis, no pase el límite.
  * Es una protección del proyecto: el tope real e infalible es el límite de gasto de la consola de Anthropic.
  */
-export const RUTA_GASTO = "memoria/gasto.json";
+export const RUTA_GASTO = RUTAS.gasto;
 
 /** Dólares por millón de tokens (tabla de precios de Anthropic, octubre 2026). Escritura en caché = 1,25 × entrada. */
 export const PRECIOS: Record<string, { entrada: number; salida: number; lecturaCache: number }> = {

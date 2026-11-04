@@ -1,8 +1,9 @@
-import "dotenv/config";
+import "./iniciar.js";
 import { mkdir, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { analizarConPresupuesto } from "./agente.js";
 import { leerDocumento } from "./documentos.js";
+import { comandoNpm, ENTORNO, RUTAS } from "./entorno.js";
 import type { Resultado } from "./esquema.js";
 
 const [rutaOferta, rutaHojaDeVida] = process.argv.slice(2);
@@ -11,7 +12,10 @@ if (!rutaOferta || !rutaHojaDeVida) {
   process.exit(1);
 }
 if (!process.env.ANTHROPIC_API_KEY) {
-  console.error("Falta ANTHROPIC_API_KEY. Copia .env.example como .env y pon tu clave.");
+  console.error(
+    `Falta ANTHROPIC_API_KEY en el entorno ${ENTORNO}. Copia .env.example como ${RUTAS.env} y pon la llave de ese entorno. ` +
+      `Desarrollo no tiene llave a propósito: usa ${comandoNpm("analizar", "test")} o ${comandoNpm("analizar", "production")}.`,
+  );
   process.exit(1);
 }
 
@@ -42,8 +46,8 @@ try {
   const { resultado, usd, estado } = await analizarConPresupuesto(oferta, hojaDeVida);
   const segundos = ((Date.now() - inicio) / 1000).toFixed(1);
 
-  await mkdir("salidas", { recursive: true });
-  const destino = join("salidas", basename(rutaOferta).replace(/\.[^.]+$/, "") + ".json");
+  await mkdir(RUTAS.salidas, { recursive: true });
+  const destino = join(RUTAS.salidas, basename(rutaOferta).replace(/\.[^.]+$/, "") + ".json");
   await writeFile(destino, JSON.stringify(resultado, null, 2));
 
   console.log(informe(resultado));
@@ -51,7 +55,7 @@ try {
 } catch (error) {
   const mensaje = error instanceof Error ? error.message : String(error);
   if (mensaje.includes("401") || mensaje.includes("api-key")) {
-    console.error("La API key no es válida. Revisa ANTHROPIC_API_KEY en tu archivo .env.");
+    console.error(`La API key no es válida. Revisa ANTHROPIC_API_KEY en ${RUTAS.env}.`);
   } else {
     console.error(`No se pudo analizar: ${mensaje}`);
   }

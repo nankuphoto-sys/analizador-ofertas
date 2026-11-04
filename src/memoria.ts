@@ -11,9 +11,11 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import * as z from "zod";
+import { RUTAS } from "./entorno.js";
 import { AnalisisSchema, type Resultado } from "./esquema.js";
 
-export const RUTA_MEMORIA = "memoria/memoria.json";
+/** Depende del entorno (ver src/entorno.ts): en producción es memoria/memoria.json, en los demás datos/<entorno>/memoria/. */
+export const RUTA_MEMORIA = RUTAS.memoria;
 export const VERSION_FORMATO = 1;
 /** Los análisis de ofertas publicadas hace más de esto se borran solos. */
 export const DIAS_CACHE = 90;

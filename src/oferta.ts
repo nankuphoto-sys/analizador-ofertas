@@ -1,3 +1,4 @@
+import "./iniciar.js";
 import { cambiarEstado, cargarMemoria, ESTADOS_OFERTA, type EstadoOferta, guardarMemoria } from "./memoria.js";
 
 /**

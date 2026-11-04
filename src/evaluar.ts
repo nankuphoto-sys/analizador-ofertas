@@ -1,9 +1,10 @@
-import "dotenv/config";
+import "./iniciar.js";
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { analizarConPresupuesto } from "./agente.js";
 import { enteroEnRango } from "./argumentos.js";
 import { leerDocumento } from "./documentos.js";
+import { ENTORNO, RUTAS } from "./entorno.js";
 import { cargarRegistro, leerLimites, revisarPresupuesto } from "./gasto.js";
 import { puntuar, type Verificacion } from "./puntaje.js";
 
@@ -20,8 +21,13 @@ try {
   console.error(error instanceof Error ? error.message : error);
   process.exit(1);
 }
+// La evaluación usa hojas de vida ficticias y gasta de verdad: no debe sumarse al gasto ni a la llave de producción.
+if (ENTORNO === "production") {
+  console.error("La evaluación no corre en producción: gastaría el presupuesto real con hojas de vida ficticias. Usa npm run evaluar (entorno de pruebas).");
+  process.exit(1);
+}
 if (!process.env.ANTHROPIC_API_KEY) {
-  console.error("Falta ANTHROPIC_API_KEY en .env");
+  console.error(`Falta ANTHROPIC_API_KEY en ${RUTAS.env}`);
   process.exit(1);
 }
 

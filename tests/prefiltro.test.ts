@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { htmlATexto, type Oferta } from "../src/fuentes/getonbrd.js";
-import { prefiltrar, stackDe, tecnologiasEn, TITULO_DESARROLLO, TITULO_SENIOR, ubicacionValida } from "../src/prefiltro.js";
+import { prefiltrar, stackDe, tecnologiasEn, TITULO_AJENO, TITULO_DESARROLLO, TITULO_SENIOR, ubicacionValida } from "../src/prefiltro.js";
 
 const HV = "Next.js, React, TypeScript, Node.js, Express, PostgreSQL, Prisma, Docker, Git, Vitest";
 const ahora = new Date("2026-10-16T12:00:00Z");
@@ -62,6 +62,25 @@ describe("TITULO_DESARROLLO", () => {
   it.each(["Ingeniero Comercial", "Analista Back Office", "Ejecutivo de Ventas", "Webmaster de contenidos", "Feedback Specialist"])(
     "descarta '%s'",
     (titulo) => expect(TITULO_DESARROLLO.test(titulo)).toBe(false),
+  );
+});
+
+describe("TITULO_AJENO", () => {
+  it.each([
+    "Security Engineer (Ingeniero/a de Seguridad)",
+    "Vulnerability Management Engineer",
+    "Site Reliability Engineer",
+    "SRE - Platform",
+    "DevOps Engineer",
+    "Data Engineer II, Credit Reporting",
+    "Solutions Engineer",
+    "Support Engineer",
+    "Ingeniero de Datos",
+  ])("marca '%s' como ajeno", (titulo) => expect(TITULO_AJENO.test(titulo)).toBe(true));
+
+  it.each(["AI Workflow Engineer | LATAM", "Software Engineer, Open Source AI", "Desarrollador Full-Stack Jr", "Front-end Developer (React)"])(
+    "no marca '%s'",
+    (titulo) => expect(TITULO_AJENO.test(titulo)).toBe(false),
   );
 });
 
@@ -139,5 +158,25 @@ describe("prefiltrar", () => {
     const [junior, semi] = filtrar([oferta({ id: "j", nivel: 2 }), oferta({ id: "s", nivel: 3 })]);
     expect(junior.oferta.id).toBe("j");
     expect(junior.puntaje).toBeGreaterThan(semi.puntaje);
+  });
+});
+
+describe("prefiltrar: cargos que no son de desarrollo", () => {
+  const dev = { texto: "React, TypeScript y Node.js con PostgreSQL." };
+  const ids = (titulos: string[]) =>
+    prefiltrar(
+      titulos.map((titulo, i) => oferta({ id: `o${i}`, titulo, ...dev })),
+      HV,
+      { niveles: [2], diasMaximo: 30, ahora },
+    ).map((c) => c.oferta.titulo);
+
+  it("deja fuera seguridad, SRE, datos y preventa aunque digan engineer", () => {
+    expect(ids(["Security Engineer", "Site Reliability Engineer", "Data Engineer II", "Solutions Engineer", "Full-Stack Engineer"])).toEqual([
+      "Full-Stack Engineer",
+    ]);
+  });
+
+  it("conserva el cargo si el título dice claramente que es de desarrollo", () => {
+    expect(ids(["Full-Stack Developer, Security Tools"])).toEqual(["Full-Stack Developer, Security Tools"]);
   });
 });

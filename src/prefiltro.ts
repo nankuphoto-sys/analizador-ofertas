@@ -91,6 +91,16 @@ export interface Candidata {
 export const TITULO_DESARROLLO =
   /\b(?:desarroll\w*|developer|programad\w*|software|dev|front[\s-]?end|back[\s-]?end|full[\s-]?stack|web|engineer)\b|\bingenier[oa]s?\b.*\b(?:software|desarrollo|sistemas|front|back|full|web)/i;
 
+/**
+ * Cargos técnicos que no son de desarrollo de software: seguridad, infraestructura/SRE, datos,
+ * soporte y preventa. Entran por la palabra "engineer" pero no son lo que busca esta hoja de vida.
+ */
+export const TITULO_AJENO =
+  /\b(?:security|seguridad|infosec|cyber\w*|vulnerabilit\w*|sre|site reliability|devops|devsecops|sysadmin|infraestructura|infrastructure|network\w*|redes|data engineer\w*|ingenier[oa]s? de datos|solutions? engineer\w*|sales engineer\w*|support engineer\w*|soporte|preventa|pre-?sales|dba|database administrator)\b/i;
+
+/** Si el título lo dice con todas sus letras, es de desarrollo aunque nombre otra área ("Full-Stack Developer, Security Tools"). */
+const TITULO_DESARROLLO_FUERTE = /\b(?:desarrollador\w*|developer|programador\w*|full[\s-]?stack|front[\s-]?end|back[\s-]?end)\b/i;
+
 const LATAM = /colombia|latam|latinoam|sudam|south america|latin america/i;
 
 /**
@@ -139,6 +149,8 @@ export function prefiltrar(
     if (TITULO_SENIOR.test(o.titulo)) continue;
     // Solo cargos de desarrollo (no ventas, operaciones, datos de negocio...).
     if (!TITULO_DESARROLLO.test(o.titulo)) continue;
+    // Seguridad, SRE, datos, soporte y preventa no son desarrollo de software.
+    if (TITULO_AJENO.test(o.titulo) && !TITULO_DESARROLLO_FUERTE.test(o.titulo)) continue;
 
     const pide = tecnologiasEn(o.texto);
     const tienes = pide.filter((t) => tuyas.has(t));

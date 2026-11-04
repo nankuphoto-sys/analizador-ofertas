@@ -2,3 +2,6 @@ node_modules/
 .env
 salidas/
 memoria/
+# Herramientas y editor (locales, no son parte del proyecto)
+.playwright-mcp/
+.vscode/

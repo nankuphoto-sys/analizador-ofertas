@@ -77,7 +77,24 @@ Busca en la [API pública de Get on Board](https://www.getonbrd.com/api/v0) con 
 
 El reporte queda en `salidas/busqueda-AAAA-MM-DD-HHMM.md` (con la hora, para no pisar una búsqueda anterior del mismo día) con enlaces, nivel, ubicación, salario, encaje y qué te falta en cada una.
 
-Opciones: `--dias=60`, `--solo-junior`, `--consultas="react,node,typescript"`.
+Opciones: `--dias=60`, `--solo-junior`, `--consultas="react,node,typescript"`, `--sin-cache`.
+
+### Memoria entre búsquedas
+
+La búsqueda recuerda, en `memoria/memoria.json` (local, ignorado por git):
+
+- **Qué ofertas ya viste**: el reporte marca con 🆕 las nuevas desde la última búsqueda.
+- **Tus decisiones**: las ofertas a las que te postulaste o que descartaste no vuelven a salir.
+- **Los análisis ya hechos**: no se pagan dos veces. Se vuelven a pedir solos si cambia tu hoja de vida, el prompt o el modelo.
+
+```bash
+npm run oferta -- <id> postulada              # o descartada, guardada; el id sale en el reporte
+npm run oferta -- <id> descartada --motivo="no es remoto de verdad"
+npm run oferta -- --lista                     # historial (--estado=postulada para filtrar)
+npm run olvidar -- --cache                    # borra los análisis guardados; también --oferta=<id> o --todo
+```
+
+Qué se guarda, qué no y por qué: [docs/memoria.md](docs/memoria.md).
 
 Lo que se encontró al usarlo (octubre 2026): de ~550 ofertas de desarrollo en Get on Board, **solo 1 era junior** y se podía postular desde Colombia en los últimos 30 días; casi todo es semi senior o senior. Por eso el filtro completa con semi senior en vez de devolver una lista vacía.
 

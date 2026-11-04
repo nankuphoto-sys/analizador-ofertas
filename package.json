@@ -7,7 +7,9 @@
     "analizar": "tsx src/analizar.ts",
     "evaluar": "tsx src/evaluar.ts",
     "typecheck": "tsc",
-    "buscar": "tsx src/buscar.ts"
+    "buscar": "tsx src/buscar.ts",
+    "oferta": "tsx src/oferta.ts",
+    "olvidar": "tsx src/olvidar.ts"
   },
   "author": "Jonathan Mena Ríos",
   "license": "MIT",

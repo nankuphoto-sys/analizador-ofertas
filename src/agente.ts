@@ -2,7 +2,9 @@ import { ChatAnthropic } from "@langchain/anthropic";
 import { createAgent, providerStrategy } from "langchain";
 import { AnalisisSchema, type Resultado } from "./esquema.js";
 import { crearHerramientaBusqueda, lineasDe } from "./hojaDeVida.js";
+import { huella } from "./memoria.js";
 import { completarResultado } from "./verificar.js";
+import * as z from "zod";
 
 const instrucciones = (hoy: string) => `Eres un asesor de selección que compara una oferta de trabajo con la hoja de vida de un candidato.
 Tu prioridad es no inventar: un requisito solo se cumple si la hoja de vida lo prueba. Hoy es ${hoy}.
@@ -63,7 +65,17 @@ Reglas:
     cada idioma o cantidad de años por debajo de lo pedido; cada requisito parcial por falta de datos (regla 4b), diciendo
     qué dato falta. No repitas aquí los deseables que faltan ni los consejos de que_destacar. Lista vacía si no hay ninguno.`;
 
-export function crearAgente(hojaDeVida: string, modelo = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5-5") {
+/** Modelo que usa el agente: ANTHROPIC_MODEL en .env, o el de por defecto. */
+export const modeloActual = () => process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5-5";
+
+/**
+ * Huella del prompt y del esquema de salida. Si cambia cualquiera de los dos, cambia esta versión
+ * y los análisis guardados en memoria dejan de reutilizarse (ver src/memoria.ts).
+ * La fecha se reemplaza por un marcador para que la versión no cambie cada día.
+ */
+export const VERSION_PROMPT = huella(instrucciones("{hoy}") + JSON.stringify(z.toJSONSchema(AnalisisSchema)));
+
+export function crearAgente(hojaDeVida: string, modelo = modeloActual()) {
   const hoy = new Date().toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" });
   return createAgent({
     model: new ChatAnthropic({ model: modelo }),

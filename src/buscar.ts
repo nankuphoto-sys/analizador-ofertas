@@ -34,7 +34,10 @@ import { aplicarFiltro, ETIQUETA_INGLES, ETIQUETA_PAGO, requisitosDe, type Filtr
  *
  * Uso: npm run buscar -- ruta/hoja-de-vida.pdf [--analizar=5] [--dias=30] [--solo-junior] [--sin-cache]
  *      [--consultas="full stack,react,node,next.js,javascript,typescript,inteligencia artificial"]
- *      [--fuentes=getonbrd,remotive,greenhouse] [--sin-ingles[=estricto]] [--en-dolares]
+ *      [--fuentes=getonbrd,remotive,greenhouse] [--sin-ingles[=estricto]] [--en-dolares] [--prueba]
+ *
+ * --prueba: para revisar que las fuentes respondan (lo usa el auditor de fuentes). No guarda la memoria ni
+ * escribe el reporte, así no marca ofertas como vistas ni deja un reporte que parezca una búsqueda tuya.
  */
 const args = process.argv.slice(2);
 const opcion = (nombre: string) => args.find((a) => a.startsWith(`--${nombre}=`))?.split("=").slice(1).join("=");
@@ -51,6 +54,7 @@ try {
 const soloJunior = args.includes("--solo-junior");
 /** Ignora los análisis guardados y vuelve a pedirlos al modelo (los nuevos sí se guardan). */
 const sinCache = args.includes("--sin-cache");
+const prueba = args.includes("--prueba");
 const consultas = (opcion("consultas") ?? "full stack,fullstack,react,node,next.js,javascript,typescript,frontend,backend,inteligencia artificial,junior")
   .split(",")
   .map((c) => c.trim())
@@ -71,7 +75,7 @@ const nombresFuentes = (opcion("fuentes") ?? fuentes.map((f) => f.nombre).join("
   .filter(Boolean);
 
 if (!rutaHojaDeVida) {
-  console.error("Uso: npm run buscar -- ruta/hoja-de-vida.pdf [--analizar=5] [--dias=30] [--solo-junior] [--sin-cache] [--fuentes=getonbrd,remotive,greenhouse] [--sin-ingles[=estricto]] [--en-dolares]");
+  console.error("Uso: npm run buscar -- ruta/hoja-de-vida.pdf [--analizar=5] [--dias=30] [--solo-junior] [--sin-cache] [--fuentes=getonbrd,remotive,greenhouse] [--sin-ingles[=estricto]] [--en-dolares] [--prueba]");
   process.exit(1);
 }
 const desconocidas = nombresFuentes.filter((n) => !fuentes.some((f) => f.nombre === n));
@@ -230,13 +234,15 @@ for (const c of ordenadas.filter((x) => analisis.has(x.oferta.id))) {
     `- **Ya te postulaste o no te interesa:** \`npm run oferta -- ${c.oferta.id} postulada\` (o \`descartada\`)`,
   );
 }
-await mkdir("salidas", { recursive: true });
 const destino = join("salidas", nombreReporte(ahora));
-await writeFile(destino, lineas.join("\n"));
+if (!prueba) {
+  await mkdir("salidas", { recursive: true });
+  await writeFile(destino, lineas.join("\n"));
 
-// 5. Guardar memoria: las candidatas mostradas quedan como vistas, más los análisis nuevos.
-memoria = registrarVistas(memoria, candidatas.map((c) => c.oferta), ahora);
-if (cargada.escribible) await guardarMemoria(memoria);
+  // 5. Guardar memoria: las candidatas mostradas quedan como vistas, más los análisis nuevos.
+  memoria = registrarVistas(memoria, candidatas.map((c) => c.oferta), ahora);
+  if (cargada.escribible) await guardarMemoria(memoria);
+}
 
 console.log("\nMejores resultados:");
 for (const [i, c] of ordenadas.slice(0, 10).entries()) {
@@ -245,4 +251,4 @@ for (const [i, c] of ordenadas.slice(0, 10).entries()) {
     `${String(i + 1).padStart(2)}. ${r ? `${r.encaje} %`.padStart(5) : "  —  "} · ${marca(c.oferta.id)}${NIVELES[c.oferta.nivel]} · ${c.oferta.titulo} — ${c.oferta.empresa}\n      ${c.ubicacion} · ${c.oferta.url}`,
   );
 }
-console.log(`\nReporte completo en ${destino}`);
+console.log(prueba ? "\nModo prueba: no se guardó la memoria ni el reporte." : `\nReporte completo en ${destino}`);

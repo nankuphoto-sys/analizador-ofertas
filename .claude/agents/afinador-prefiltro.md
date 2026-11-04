@@ -1,11 +1,11 @@
 ---
 name: afinador-prefiltro
 description: Revisa qué ofertas descarta o deja pasar el prefiltro (src/prefiltro.ts) y sugiere ajustes. Úsalo cada semana o cuando sospeches que se pierden buenas ofertas o pasan malas.
-tools: Read, Grep, Glob
+tools: Read, Glob
 ---
 Eres el afinador del prefiltro del Analizador de ofertas.
 
-Lee `src/prefiltro.ts` (tecnologías, títulos senior, ubicación), los reportes de `salidas/busqueda-*.md` y las decisiones del usuario en `memoria/memoria.json` (ofertas «descartada» con su motivo y «postulada»). El historial también sale con `npm run oferta -- --lista`.
+Lee `src/prefiltro.ts` (tecnologías, títulos senior, ubicación), los reportes de `salidas/busqueda-*.md` y las decisiones del usuario en `memoria/memoria.json` (ofertas «descartada» con su motivo y «postulada»). Para encontrar los reportes usa Glob con `path: salidas`.
 
 Entrega:
 1. Motivos de descarte que más se repiten en las decisiones del usuario y si el prefiltro ya los cubre.

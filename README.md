@@ -70,14 +70,54 @@ npm run buscar -- mi-hoja-de-vida.pdf               # busca, filtra y analiza la
 npm run buscar -- mi-hoja-de-vida.pdf --analizar=0  # solo el filtro, sin gastar créditos
 ```
 
-Busca en la [API pública de Get on Board](https://www.getonbrd.com/api/v0) con varias palabras clave (full stack, React, Node, Next.js, IA, junior...) y trabaja en dos pasadas para no gastar de más:
+Busca en varias fuentes (carpeta `src/fuentes/`) y trabaja en dos pasadas para no gastar de más:
 
-1. **Filtro sin IA:** se queda con ofertas **junior o sin experiencia** (y semi senior si hay pocas), publicadas en los últimos 30 días, que se pueden postular desde Colombia (remoto, o híbrido/presencial en Colombia). Descarta títulos senior o de liderazgo, cargos que no son de desarrollo y ofertas con menos de 2 tecnologías de tu stack. Ordena por qué parte de la tecnología que piden aparece en tu hoja de vida, con un extra para las junior.
+| Fuente | Cómo se consulta | Notas |
+| --- | --- | --- |
+| Get on Board (`getonbrd`) | [API pública](https://www.getonbrd.com/api/v0), una búsqueda por palabra clave | Trae el nivel (junior, semi senior...) y los países. |
+| Remotive (`remotive`) | [API pública](https://remotive.com/api/remote-jobs), **una sola petición** por búsqueda | No publica el nivel: se deduce del título. Las ofertas llegan con 24 h de retraso y el reporte nombra a Remotive como fuente, como piden sus condiciones. Pide no consultarla más de 4 veces al día. **La API gratuita devuelve solo 10 ofertas**, así que aporta poco. |
+| Greenhouse (`greenhouse`) | [API pública de tableros](https://developers.greenhouse.io/job-board.html), una petición por empresa | Lee las empresas de `greenhouse-empresas.json` (hoy 7 con vacantes en Colombia o Latinoamérica). El nivel se deduce del título y la fecha es la de primera publicación (usa `--dias=90` para ver vacantes más antiguas que siguen abiertas). |
+
+1. **Filtro sin IA:** se queda con ofertas **junior o sin experiencia** (y semi senior o sin nivel indicado si hay pocas), publicadas en los últimos 30 días, que se pueden postular desde Colombia (remoto, o híbrido/presencial en Colombia). Descarta títulos senior o de liderazgo, cargos que no son de desarrollo y ofertas con menos de 2 tecnologías de tu stack. Ordena por qué parte de la tecnología que piden aparece en tu hoja de vida, con un extra para las junior.
 2. **Análisis con IA:** solo las mejores pasan por el analizador (`--analizar=N`).
 
 El reporte queda en `salidas/busqueda-AAAA-MM-DD-HHMM.md` (con la hora, para no pisar una búsqueda anterior del mismo día) con enlaces, nivel, ubicación, salario, encaje y qué te falta en cada una.
 
-Opciones: `--dias=60`, `--solo-junior`, `--consultas="react,node,typescript"`, `--sin-cache`.
+Opciones: `--dias=60`, `--solo-junior`, `--consultas="react,node,typescript"`, `--sin-cache`, `--fuentes=getonbrd,remotive,greenhouse` (por defecto todas; por ejemplo `--fuentes=getonbrd,greenhouse` para no tocar Remotive), `--sin-ingles`, `--sin-ingles=estricto` y `--en-dolares` (ver abajo).
+
+#### Sin inglés y pago en dólares
+
+El reporte muestra dos columnas, **Pago** (USD, COP o no dice) e **Inglés** (lo piden, deseable, no hace falta, oferta en inglés o no lo dice), deducidas del texto de cada oferta. Dos opciones las vuelven filtros:
+
+- `--sin-ingles`: quita las ofertas que piden inglés. Las que lo marcan como deseable o no lo mencionan se quedan.
+- `--sin-ingles=estricto`: además quita las que están **escritas en inglés** aunque no lo mencionen, porque se espera que lo manejes. Casi todo lo de Remotive y Greenhouse queda fuera con esta opción; Get on Board, que publica en español, es donde más queda.
+- `--en-dolares`: deja solo las que dicen pagar en dólares (salario en USD, «USD» o «dólares» en el texto). Get on Board y Remotive publican el salario en dólares; si una oferta no dice cuánto pagan, no entra con esta opción.
+
+```bash
+npm run buscar -- mi-hoja-de-vida.pdf --sin-ingles --en-dolares --analizar=0
+```
+
+Son pistas, no garantías: una oferta que no menciona el inglés puede hacer la entrevista en inglés, y una que no dice el salario puede pagar en dólares. Confírmalo en la oferta antes de postular. El código está en `src/requisitos.ts`.
+
+Para sumar otra empresa de Greenhouse, agrega su `token` (el nombre al final de `job-boards.greenhouse.io/<token>`) a `greenhouse-empresas.json`. Para sumar otro sitio: crea `src/fuentes/<nombre>.ts` que exporte un `Fuente` (ver `src/fuentes/tipos.ts`), con pruebas, y agrégala a `src/fuentes/index.ts`. Usa solo APIs o feeds oficiales. LinkedIn no se consulta: sus reglas prohíben el acceso automatizado.
+
+### Equipo de agentes (Claude Code)
+
+El proyecto incluye un equipo de subagentes y tres comandos para Claude Code en `equipo-agentes/`. Para activarlos, cópialos a `.claude/` (una sola vez, desde la raíz del proyecto):
+
+```bash
+xcopy equipo-agentes .claude /E /I /Y
+```
+
+Después, en Claude Code dentro de este proyecto:
+
+| Comando | Qué hace |
+| --- | --- |
+| `/buscar-ofertas <hoja-de-vida>` | Corre la búsqueda, resume las mejores y, si escoges alguna, prepara los borradores de postulación (`preparador-postulacion`). Nunca envía nada. |
+| `/nuevas-plataformas <enfoque>` | `explorador-plataformas` busca y evalúa plataformas nuevas (acceso, condiciones de uso, cobertura) y tú decides cuáles conectar. |
+| `/afinar-prefiltro` | `afinador-prefiltro` revisa tus decisiones (`memoria/`) y propone ajustes al filtro, con su prueba, para que los apruebes. |
+
+`auditor-fuentes` entra solo cuando una fuente falla o devuelve 0 ofertas.
 
 ### Memoria entre búsquedas
 
@@ -130,14 +170,18 @@ La métrica más importante es **invenciones**: cuántas veces el agente dijo "c
 
 ```
 src/
+  fuentes/        una fuente por sitio (getonbrd, remotive, greenhouse) y su registro; ver tipos.ts
   agente.ts       crea el agente (modelo, herramienta, instrucciones, esquema)
   hojaDeVida.ts   normalización, búsqueda en la hoja de vida + herramienta para el agente
   verificar.ts    rechaza evidencias inventadas y calcula el encaje
   esquema.ts      forma del JSON de salida (Zod)
   documentos.ts   lee PDF o texto
   puntaje.ts      compara la salida con lo esperado
+  requisitos.ts   deduce si piden inglés y si pagan en dólares (filtros --sin-ingles y --en-dolares)
   analizar.ts     comando para una oferta
   evaluar.ts      comando de evaluación
+equipo-agentes/   subagentes y comandos de Claude Code; se copian a .claude/ (ver README)
+greenhouse-empresas.json  empresas de Greenhouse que se consultan
 ofertas/          ofertas de ejemplo (empresas ficticias)
 casos/            lo que el agente debería concluir, escrito a mano
 ejemplos/         hoja de vida de ejemplo (persona ficticia)

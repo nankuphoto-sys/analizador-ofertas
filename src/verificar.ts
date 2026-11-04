@@ -1,4 +1,4 @@
-import type { Analisis, Requisito, Resultado } from "./esquema.js";
+import type { Analisis, Consejo, Requisito, Resultado } from "./esquema.js";
 import { contieneFrase, normalizar } from "./hojaDeVida.js";
 
 /** Separa una evidencia con varias citas ("a / b") en sus partes. */
@@ -29,6 +29,21 @@ export function verificarRequisitos(requisitos: Requisito[], hojaDeVida: string)
   return { verificados, rechazadas };
 }
 
+/**
+ * Regla que el agente nunca cruza (docs/regla-no-inventar.md): un consejo de qué destacar solo se muestra
+ * si su cita aparece literalmente en la hoja de vida. Los demás se descartan, nunca se muestran "por si acaso".
+ * Los válidos quedan como texto con su cita a la vista, para que el usuario vea de dónde sale cada uno.
+ */
+export function verificarConsejos(consejos: Consejo[], hojaDeVida: string) {
+  const validos: string[] = [];
+  const rechazados: string[] = [];
+  for (const { consejo, cita } of consejos) {
+    if (evidenciaValida(cita, hojaDeVida)) validos.push(`${consejo.trim()} — «${cita.trim()}»`);
+    else rechazados.push(consejo.trim());
+  }
+  return { validos, rechazados };
+}
+
 const PESO_TIPO = { obligatorio: 2, deseable: 1 } as const;
 const VALOR_ESTADO = { cumple: 1, parcial: 0.5, no_cumple: 0 } as const;
 
@@ -56,14 +71,21 @@ export function filtrarPalabrasFaltantes(palabras: string[], hojaDeVida: string)
 /** Aplica todas las verificaciones al análisis del modelo y calcula el encaje. */
 export function completarResultado(analisis: Analisis, hojaDeVida: string): Resultado {
   const { verificados, rechazadas } = verificarRequisitos(analisis.requisitos, hojaDeVida);
+  const consejos = verificarConsejos(analisis.que_destacar, hojaDeVida);
   const advertencias = [...analisis.advertencias];
   if (rechazadas.length > 0) {
     advertencias.push(
       `${rechazadas.length} requisito(s) se pasaron a "no cumple" porque la evidencia citada no aparece en la hoja de vida: ${rechazadas.join(", ")}.`,
     );
   }
+  if (consejos.rechazados.length > 0) {
+    advertencias.push(
+      `Se quitaron ${consejos.rechazados.length} consejo(s) de "qué destacar" porque su cita no aparece en la hoja de vida.`,
+    );
+  }
   return {
     ...analisis,
+    que_destacar: consejos.validos,
     requisitos: verificados,
     palabras_clave_faltantes: filtrarPalabrasFaltantes(analisis.palabras_clave_faltantes, hojaDeVida),
     advertencias,

@@ -52,6 +52,8 @@ let totalAciertos = 0;
 let totalVerificaciones = 0;
 let totalInvenciones = 0;
 let totalRechazadas = 0;
+let totalConsejos = 0;
+let totalConsejosQuitados = 0;
 
 for (const archivo of casos) {
   const nombre = archivo.replace(/\.json$/, "");
@@ -75,7 +77,14 @@ for (const archivo of casos) {
     rechazadas += resultado.evidencias_rechazadas.length;
     totalAciertos += p.aciertos;
     totalVerificaciones += p.total;
-    console.log(`${nombre} · intento ${i}: ${p.aciertos}/${p.total} correctos · encaje ${resultado.encaje} %`);
+    // Consejos de "qué destacar": cuántos quedaron y cuántos se quitaron por cita inventada (docs/regla-no-inventar.md).
+    const quitados = Number(/Se quitaron (\d+) consejo/.exec(resultado.advertencias.join(" "))?.[1] ?? 0);
+    totalConsejos += resultado.que_destacar.length;
+    totalConsejosQuitados += quitados;
+    console.log(
+      `${nombre} · intento ${i}: ${p.aciertos}/${p.total} correctos · encaje ${resultado.encaje} % · ` +
+        `consejos ${resultado.que_destacar.length} (quitados ${quitados})`,
+    );
     for (const e of p.errores) console.log(`   - ${e}`);
     for (const r of resultado.evidencias_rechazadas) console.log(`   · evidencia rechazada por la verificación: ${r}`);
   }
@@ -92,5 +101,6 @@ console.log("| --- | --- | --- | --- | --- |");
 for (const f of filas) console.log(f);
 console.log(
   `\nTotal: ${totalAciertos}/${totalVerificaciones} requisitos bien clasificados, ${totalInvenciones} invenciones, ` +
-    `${totalRechazadas} evidencias rechazadas por la verificación.`,
+    `${totalRechazadas} evidencias rechazadas por la verificación, ` +
+    `${totalConsejos} consejos válidos y ${totalConsejosQuitados} quitados por cita inventada.`,
 );

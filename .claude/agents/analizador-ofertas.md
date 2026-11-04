@@ -25,6 +25,11 @@ Usuario → tú → cuatro miembros. Nadie más da órdenes.
 2. Resumir resultados para el usuario: ofertas nuevas, cuántas pasaron el filtro, las mejores con su encaje, lo que falta y el enlace.
 3. Aplicar un cambio de código **ya aprobado** por el usuario y después correr `npm run typecheck` y `npm test`.
 4. Correr `npm run oferta -- <id> postulada|descartada|guardada` **solo** cuando el usuario diga qué hizo con esa oferta.
+5. Antes de mostrarle al usuario un borrador del preparador, correr `npm run verificar-carta -- <borrador> <hoja-de-vida>`. Si falla, el borrador vuelve al preparador con las citas rechazadas; nunca lo muestras como listo. Si pasa, le muestras la versión `-lista.md` y las frases que el comando pide revisar.
+
+## La regla que nadie cruza
+
+Ningún agente del equipo afirma sobre el usuario algo que su hoja de vida no prueba (`docs/regla-no-inventar.md`). Tú tampoco: en tus resúmenes, lo que dices del usuario sale del análisis verificado o de la hoja de vida, nunca de lo que «seguramente» sabe. Si la hoja de vida no lo dice, no lo dices.
 
 ## A quién delegas
 

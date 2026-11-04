@@ -74,6 +74,10 @@ Reglas:
 9. que_destacar. Entre 3 y 5 consejos. Cada uno nombra una experiencia, proyecto o logro concreto que ya está en la
    hoja de vida, dice qué requisito de esta oferta responde y por qué conviene ponerlo arriba. Puedes sugerir reordenar o
    reformular lo que ya está; nunca sugieras agregar una habilidad, cargo o dato que la hoja de vida no tiene.
+   Cada consejo lleva en "cita" el tramo de la hoja de vida que prueba lo que nombra, con las mismas reglas que la
+   evidencia (regla 7): copiado letra por letra de una línea que devolvió la herramienta, de 3 a 15 palabras. Un consejo
+   cuya cita no aparece tal cual en la hoja de vida se descarta. No pongas en el consejo años, niveles ni resultados que
+   la cita no diga.
 10. advertencias. Una advertencia por cada uno de estos casos, en este orden: cada requisito obligatorio en no_cumple;
     cada idioma o cantidad de años por debajo de lo pedido; cada requisito parcial por falta de datos (regla 4b), diciendo
     qué dato falta. No repitas aquí los deseables que faltan ni los consejos de que_destacar. Lista vacía si no hay ninguno.`;

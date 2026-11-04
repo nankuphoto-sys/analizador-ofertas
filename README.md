@@ -14,6 +14,9 @@ Este agente está diseñado para **no inventar**:
 2. **La evidencia se verifica en código.** Si el modelo marca un requisito como cumplido y la cita no aparece literalmente en la hoja de vida, el requisito pasa a "no cumple" y se avisa.
 3. **El encaje lo calcula el código, no el modelo**: los requisitos obligatorios pesan el doble que los deseables y un cumplimiento parcial vale la mitad.
 4. Las palabras clave "faltantes" que sugiere el modelo se revisan contra la hoja de vida y se descartan las que sí aparecen.
+5. **Los consejos de "qué destacar" y las cartas de postulación también llevan su cita**, y se comprueban igual: un consejo con una cita inventada se quita, y una carta con una cita inventada vuelve al preparador (`npm run verificar-carta`).
+
+Es la regla que ningún agente del proyecto cruza: **nunca afirmar sobre el candidato algo que su hoja de vida no pruebe**. Dónde se comprueba y qué queda sin cubrir: [docs/regla-no-inventar.md](docs/regla-no-inventar.md).
 
 ```
 oferta + hoja de vida ──> agente (Claude) ──> buscar_en_hoja_de_vida ──> análisis (Zod)

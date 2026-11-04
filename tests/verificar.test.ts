@@ -5,6 +5,7 @@ import {
   completarResultado,
   evidenciaValida,
   filtrarPalabrasFaltantes,
+  verificarConsejos,
   verificarRequisitos,
 } from "../src/verificar.js";
 
@@ -96,5 +97,47 @@ describe("completarResultado", () => {
     expect(r.encaje).toBe(50);
     expect(r.evidencias_rechazadas).toEqual(["Docker"]);
     expect(r.advertencias.at(-1)).toContain("Docker");
+  });
+});
+
+describe("regla: nunca afirmar algo que la hoja de vida no prueba (consejos)", () => {
+  it("un consejo con cita literal se muestra con la cita a la vista", () => {
+    const { validos, rechazados } = verificarConsejos(
+      [{ consejo: "Pon arriba el catálogo: responde a React", cita: "Construí el catálogo con React" }],
+      HV,
+    );
+    expect(validos).toEqual(["Pon arriba el catálogo: responde a React — «Construí el catálogo con React»"]);
+    expect(rechazados).toEqual([]);
+  });
+
+  it("un consejo cuya cita no está en la hoja de vida se descarta, aunque suene bien", () => {
+    const { validos, rechazados } = verificarConsejos(
+      [
+        { consejo: "Destaca tus 3 años con AWS", cita: "3 años desplegando en AWS" },
+        { consejo: "Menciona GraphQL", cita: "" },
+      ],
+      HV,
+    );
+    expect(validos).toEqual([]);
+    expect(rechazados).toEqual(["Destaca tus 3 años con AWS", "Menciona GraphQL"]);
+  });
+
+  it("completarResultado deja solo los consejos verificados y avisa cuántos quitó", () => {
+    const r = completarResultado(
+      {
+        cargo: "Frontend",
+        empresa: "Ejemplo",
+        requisitos: [],
+        palabras_clave_faltantes: [],
+        que_destacar: [
+          { consejo: "Destaca GraphQL", cita: "API REST y GraphQL" },
+          { consejo: "Destaca tu liderazgo de equipo", cita: "Lideré un equipo de 5 personas" },
+        ],
+        advertencias: [],
+      },
+      HV,
+    );
+    expect(r.que_destacar).toEqual(["Destaca GraphQL — «API REST y GraphQL»"]);
+    expect(r.advertencias.at(-1)).toMatch(/Se quitaron 1 consejo/);
   });
 });

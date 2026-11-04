@@ -9,7 +9,8 @@
     "typecheck": "tsc",
     "buscar": "tsx src/buscar.ts",
     "oferta": "tsx src/oferta.ts",
-    "olvidar": "tsx src/olvidar.ts"
+    "olvidar": "tsx src/olvidar.ts",
+    "verificar-carta": "tsx src/verificarCarta.ts"
   },
   "author": "Jonathan Mena Ríos",
   "license": "MIT",

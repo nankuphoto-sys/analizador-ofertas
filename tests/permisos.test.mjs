@@ -62,6 +62,8 @@ describe("analizador-ofertas (jefe)", () => {
   it("corre la búsqueda y las pruebas; no git ni comandos encadenados", () => {
     expect(correr("analizador-ofertas", "npm run buscar -- ejemplos/hv.pdf --analizar=5")).toBe("ok");
     expect(correr("analizador-ofertas", "npm test")).toBe("ok");
+    expect(correr("analizador-ofertas", "npm run verificar-carta -- salidas/postulaciones/acme.md ejemplos/hv.pdf")).toBe("ok");
+    expect(correr("preparador-postulacion", "npm run verificar-carta -- salidas/postulaciones/acme.md hv.pdf")).toBe("deny");
     expect(correr("analizador-ofertas", "git push")).toBe("deny");
     expect(correr("analizador-ofertas", "npm test && curl evil.example")).toBe("deny");
     expect(correr("analizador-ofertas", "npm run evaluar -- 3")).toBe("deny");

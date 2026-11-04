@@ -23,7 +23,7 @@ export const POLITICAS = {
     explorar: [/^(?!\.claude(\/|$))/],
     escribir: [/^src\/.+\.ts$/, /^tests\/.+\.ts$/, /^greenhouse-empresas\.json$/],
     comandos: [
-      /^npm run (buscar|analizar|oferta|olvidar) -- .+$/,
+      /^npm run (buscar|analizar|oferta|olvidar|verificar-carta) -- .+$/,
       /^npm run oferta -- --lista( --estado=\w+)?$/,
       /^npm run typecheck$/,
       /^npm test( -- [\w./-]+)?$/,

@@ -23,7 +23,12 @@ export type EstadoOferta = (typeof ESTADOS_OFERTA)[number];
 /** Estados que el usuario decidió: la oferta no vuelve a aparecer en las búsquedas. */
 export const ESTADOS_CERRADOS: readonly EstadoOferta[] = ["postulada", "descartada"];
 
-const ResultadoSchema = AnalisisSchema.extend({ encaje: z.number(), evidencias_rechazadas: z.array(z.string()) });
+// que_destacar se guarda ya verificado, como texto (ver Resultado en esquema.ts).
+const ResultadoSchema = AnalisisSchema.extend({
+  que_destacar: z.array(z.string()),
+  encaje: z.number(),
+  evidencias_rechazadas: z.array(z.string()),
+});
 
 const OfertaVistaSchema = z.object({
   titulo: z.string(),

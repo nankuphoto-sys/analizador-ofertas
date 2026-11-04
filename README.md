@@ -92,7 +92,7 @@ Busca en varias fuentes (carpeta `src/fuentes/`) y trabaja en dos pasadas para n
 
 El reporte queda en `salidas/busqueda-AAAA-MM-DD-HHMM.md` (con la hora, para no pisar una búsqueda anterior del mismo día) con enlaces, nivel, ubicación, salario, encaje y qué te falta en cada una.
 
-Opciones: `--dias=60`, `--solo-junior`, `--consultas="react,node,typescript"`, `--sin-cache`, `--fuentes=getonbrd,remotive,greenhouse` (por defecto todas; por ejemplo `--fuentes=getonbrd,greenhouse` para no tocar Remotive), `--sin-ingles`, `--sin-ingles=estricto` y `--en-dolares` (ver abajo).
+Opciones: `--dias=60`, `--solo-junior`, `--consultas="react,node,typescript"`, `--sin-cache`, `--fuentes=getonbrd,remotive,greenhouse` (por defecto todas; por ejemplo `--fuentes=getonbrd,greenhouse` para no tocar Remotive), `--sin-ingles`, `--sin-ingles=estricto` y `--en-dolares` (ver abajo). `--analizar` admite como máximo 25 por búsqueda. `--prueba` revisa que las fuentes respondan sin guardar la memoria ni el reporte (lo usa el auditor de fuentes).
 
 #### Sin inglés y pago en dólares
 
@@ -118,7 +118,25 @@ El proyecto incluye un equipo de subagentes y tres comandos para Claude Code en 
 xcopy equipo-agentes .claude /E /I /Y
 ```
 
-El equipo tiene un jefe, `analizador-ofertas`: corre la búsqueda y el análisis, decide qué miembro trabaja y es el único que habla contigo. Los otros cuatro solo le responden a él, y todo lo irreversible (cambiar código, conectar o quitar fuentes, marcar ofertas, postularse) pasa por tu aprobación. Para trabajar directamente con el jefe:
+El equipo tiene un jefe, `analizador-ofertas`: corre la búsqueda y el análisis, decide qué miembro trabaja y es el único que habla contigo. Los otros cuatro solo le responden a él, y todo lo irreversible (cambiar código, conectar o quitar fuentes, marcar ofertas, postularse) pasa por tu aprobación.
+
+| Agente | Qué hace | Qué puede tocar |
+| --- | --- | --- |
+| `analizador-ofertas` (jefe) | Corre búsquedas y análisis, reparte el trabajo, verifica los borradores y te resume todo | Código ya aprobado y la memoria vía `npm run oferta`; te pregunta antes de lo irreversible o de gastar de más |
+| `auditor-fuentes` | Revisa si una fuente dejó de responder y propone el arreglo mínimo | Solo `src/fuentes/`; prueba con la hoja de vida de ejemplo y sin IA (`--prueba`) |
+| `afinador-prefiltro` | Revisa qué descarta el filtro según tus decisiones y propone un ajuste con su prueba | Solo lectura |
+| `explorador-plataformas` | Busca plataformas de empleo nuevas y evalúa si se pueden conectar de forma legítima | La web; no ve tu hoja de vida, tu memoria ni tus reportes |
+| `preparador-postulacion` | Escribe el borrador de carta y respuestas de una oferta que escojas | Solo `salidas/postulaciones/`; nunca envía nada |
+
+Cada borrador del preparador marca cada afirmación sobre ti con su cita de la hoja de vida, `[[así]]`. Antes de mostrártelo, el jefe corre:
+
+```bash
+npm run verificar-carta -- salidas/postulaciones/<empresa>-<fecha>.md mi-hoja-de-vida.pdf
+```
+
+Si una cita no aparece en tu hoja de vida, el borrador vuelve al preparador. Si todas aparecen, deja al lado la versión `-lista.md`, sin marcas, y te muestra las frases con cifras o tecnologías que no traen cita, para que las revises tú.
+
+Para trabajar directamente con el jefe:
 
 ```bash
 claude --agent analizador-ofertas
@@ -140,7 +158,7 @@ Los comandos también ponen a la sesión en el papel de jefe. En Claude Code den
 
 Cada análisis cuesta dinero en la API de Anthropic, así que el gasto tiene topes:
 
-- **Por día y por mes**, en `.env`: `LIMITE_USD_DIA=2` y `LIMITE_USD_MES=20` (dólares). Antes de cada análisis se revisa que lo gastado más lo que suele costar uno no pase el límite; si no cabe, no se analiza.
+- **Por día y por mes**, en el `.env` de cada entorno: `LIMITE_USD_DIA=2` y `LIMITE_USD_MES=20` (dólares). Antes de cada análisis se revisa que lo gastado más lo que cuesta un análisis (el mayor entre el promedio y el más caro de los últimos 10) no pase el límite; si no cabe, no se analiza. Cada entorno lleva su propio registro de gasto.
 - **Por corrida**: máximo 25 análisis por búsqueda, y la evaluación acepta de 1 a 5 repeticiones y no empieza si no le alcanza el presupuesto.
 - **Por análisis**: tope de tokens, de pasos del agente, de tiempo (3 minutos) y de largo de los textos.
 
@@ -183,7 +201,7 @@ La métrica más importante es **invenciones**: cuántas veces el agente dijo "c
 | Oferta | Requisitos bien clasificados | Invenciones | Encaje |
 | --- | --- | --- | --- |
 | frontend-fintech | 100 % | 0 | 93 % |
-| fullstack-logistica | 100 % | 0 | 30–35 % |
+| fullstack-logistica | 100 % | 0 | 30 % |
 | ai-engineer | 100 % | 0 | 8 % |
 | disenador-ux | 100 % | 0 | 30 % |
 
@@ -191,28 +209,43 @@ La métrica más importante es **invenciones**: cuántas veces el agente dijo "c
 
 **Instrucciones sin ambigüedad (noviembre 2026).** Se reescribieron las 10 reglas del prompt para que cada una tenga una sola lectura: qué cuenta como un requisito (uno por cosa comprobable; las alternativas con "o" son uno solo), una lista cerrada de señales de "deseable", hasta 2 búsquedas extra solo con otras formas de escribir lo mismo, los tres únicos casos de "parcial", cómo sumar años (periodos solapados una vez, redondeo hacia abajo), idiomas comparados en la escala MCER y una evidencia obligatoria también en "parcial". La clasificación siguió en 84 de 84 con 0 invenciones. El encaje sí cambió: ai-engineer bajó de 18 % a 8 % (lo más probable es la regla de idiomas: pide inglés C1 y la hoja de vida dice B1, dos niveles abajo, que antes el prompt ponía como ejemplo de "parcial" y ahora es "no cumple"), y disenador-ux subió de 22 % a 30 % (no se revisó requisito por requisito qué lo movió). También quedó más estable entre intentos: frontend-fintech pasó de 93–96 % a 93 % en los tres.
 
+**Consejos con cita (noviembre 2026).** Desde que cada consejo de "qué destacar" debe traer su cita de la hoja de vida, la evaluación también los cuenta: 45 consejos válidos y 0 quitados por cita inventada, con la clasificación todavía en 84 de 84 y 0 invenciones. El encaje de fullstack-logistica quedó estable en 30 % (antes variaba entre 30 y 35 %).
+
 **Con cautela:** son 4 ofertas y una hoja de vida ficticias, escritas para esta evaluación por la misma persona que escribió el agente. La verificación de evidencias no rechazó nada en estas corridas: el modelo citó bien. Está para cuando no lo haga, y tiene sus propias pruebas en `tests/verificar.test.ts`.
 
 ## Estructura
 
 ```
 src/
-  fuentes/        una fuente por sitio (getonbrd, remotive, greenhouse) y su registro; ver tipos.ts
-  agente.ts       crea el agente (modelo, herramienta, instrucciones, esquema)
-  hojaDeVida.ts   normalización, búsqueda en la hoja de vida + herramienta para el agente
-  verificar.ts    rechaza evidencias inventadas y calcula el encaje
-  esquema.ts      forma del JSON de salida (Zod)
-  documentos.ts   lee PDF o texto
-  puntaje.ts      compara la salida con lo esperado
-  requisitos.ts   deduce si piden inglés y si pagan en dólares (filtros --sin-ingles y --en-dolares)
-  analizar.ts     comando para una oferta
-  evaluar.ts      comando de evaluación
-equipo-agentes/   subagentes y comandos de Claude Code; se copian a .claude/ (ver README)
+  fuentes/          una fuente por sitio (getonbrd, remotive, greenhouse) y su registro; ver tipos.ts
+  agente.ts         crea el agente (modelo, herramienta, instrucciones, esquema) y sus topes por análisis
+  hojaDeVida.ts     normalización, búsqueda en la hoja de vida + herramienta para el agente
+  verificar.ts      rechaza evidencias y consejos con citas inventadas y calcula el encaje
+  carta.ts          comprueba las [[citas]] de los borradores de postulación
+  esquema.ts        forma del JSON de salida (Zod)
+  gasto.ts          costo de cada análisis y límite por día y por mes
+  memoria.ts        historial de ofertas y caché de análisis entre búsquedas
+  entorno.ts        entornos de desarrollo, pruebas y producción, y sus rutas
+  iniciar.ts        carga el .env del entorno y avisa en cuál corre
+  prefiltro.ts      filtro sin IA: nivel, fecha, ubicación, títulos y stack
+  requisitos.ts     deduce si piden inglés y si pagan en dólares (filtros --sin-ingles y --en-dolares)
+  reporte.ts        arma el reporte de la búsqueda
+  documentos.ts     lee PDF o texto
+  puntaje.ts        compara la salida con lo esperado
+  argumentos.ts     lee y valida las opciones de la línea de comandos
+  analizar.ts       comando para una oferta
+  buscar.ts         comando de búsqueda
+  oferta.ts         marca ofertas como postuladas, descartadas o guardadas
+  olvidar.ts        borra memoria o caché
+  evaluar.ts        comando de evaluación
+  verificarCarta.ts comando que revisa un borrador de postulación
+docs/               jerarquía, comunicación y permisos del equipo, límite de gasto, regla de no inventar, memoria y entornos
+equipo-agentes/     subagentes, comandos, control de permisos (hooks/) y settings.json de Claude Code; se copian a .claude/
 greenhouse-empresas.json  empresas de Greenhouse que se consultan
-ofertas/          ofertas de ejemplo (empresas ficticias)
-casos/            lo que el agente debería concluir, escrito a mano
-ejemplos/         hoja de vida de ejemplo (persona ficticia)
-tests/            pruebas con Vitest
+ofertas/            ofertas de ejemplo (empresas ficticias)
+casos/              lo que el agente debería concluir, escrito a mano
+ejemplos/           hoja de vida de ejemplo (persona ficticia)
+tests/              pruebas con Vitest
 ```
 
 ## Límites conocidos
@@ -221,6 +254,8 @@ tests/            pruebas con Vitest
 - PDFs escaneados (imágenes) no tienen texto.
 - Los años de experiencia los calcula el modelo a partir de las fechas; con fechas ambiguas puede equivocarse.
 - La evaluación usa datos ficticios; falta medir con ofertas y hojas de vida reales.
+- El extractor de PDF a veces quita guiones y paréntesis («AES-256-GCM» queda «AES256GCM»), así que una cita bien copiada del PDF original puede no coincidir con el texto extraído.
+- Una frase puede ir más allá de su cita («lideré» cuando la cita dice «construí»); ver [docs/regla-no-inventar.md](docs/regla-no-inventar.md).
 
 ## Configuración
 
@@ -228,3 +263,8 @@ tests/            pruebas con Vitest
 | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | Clave de la API de Anthropic | (obligatoria) |
 | `ANTHROPIC_MODEL` | Modelo de Claude a usar | `claude-sonnet-5-5` |
+| `LIMITE_USD_DIA` | Gasto máximo en la API por día, en dólares | `2` |
+| `LIMITE_USD_MES` | Gasto máximo en la API por mes, en dólares | `20` |
+| `APP_ENV` | Entorno (`development`, `test`, `production`); lo ponen los scripts `:test` y `:prod` | `development` |
+
+Cada entorno lee sus variables de su propio archivo: `.env.production`, `.env.test` o `.env.development` (ver [docs/entornos.md](docs/entornos.md)).

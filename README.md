@@ -115,7 +115,7 @@ El equipo tiene un jefe, `analizador-ofertas`: corre la búsqueda y el análisis
 claude --agent analizador-ofertas
 ```
 
-Quién decide qué y qué puede tocar cada uno: [docs/jerarquia-agentes.md](docs/jerarquia-agentes.md).
+Quién decide qué y qué puede tocar cada uno: [docs/jerarquia-agentes.md](docs/jerarquia-agentes.md). Cómo se pasan información el jefe y los miembros (formato de encargo y de entrega, archivos compartidos): [docs/comunicacion-agentes.md](docs/comunicacion-agentes.md).
 
 Los comandos también ponen a la sesión en el papel de jefe. En Claude Code dentro de este proyecto:
 

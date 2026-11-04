@@ -1,8 +1,9 @@
 import "dotenv/config";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { analizarOferta, modeloActual, VERSION_PROMPT } from "./agente.js";
+import { analizarConPresupuesto, modeloActual, VERSION_PROMPT } from "./agente.js";
 import { opcionEntera } from "./argumentos.js";
+import { type Estado, leerLimites, PresupuestoAgotado } from "./gasto.js";
 import { leerDocumento } from "./documentos.js";
 import type { Resultado } from "./esquema.js";
 import { NIVELES, type Oferta } from "./fuentes/getonbrd.js";
@@ -39,13 +40,15 @@ import { aplicarFiltro, ETIQUETA_INGLES, ETIQUETA_PAGO, requisitosDe, type Filtr
  * --prueba: para revisar que las fuentes respondan (lo usa el auditor de fuentes). No guarda la memoria ni
  * escribe el reporte, así no marca ofertas como vistas ni deja un reporte que parezca una búsqueda tuya.
  */
+/** Tope de ofertas analizadas por búsqueda, aunque se pida más con --analizar: un error de tipeo no debe costar caro. */
+const MAXIMO_ANALIZAR = 25;
 const args = process.argv.slice(2);
 const opcion = (nombre: string) => args.find((a) => a.startsWith(`--${nombre}=`))?.split("=").slice(1).join("=");
 const rutaHojaDeVida = args.find((a) => !a.startsWith("--"));
 let cuantasAnalizar: number;
 let dias: number;
 try {
-  cuantasAnalizar = opcionEntera(args, "analizar", 5);
+  cuantasAnalizar = opcionEntera(args, "analizar", 5, MAXIMO_ANALIZAR);
   dias = opcionEntera(args, "dias", 30);
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);
@@ -176,16 +179,30 @@ if (!sinCache) {
 const elegidas = candidatas.slice(0, cuantasAnalizar).filter((c) => !analisis.has(c.oferta.id));
 const yaGuardadas = Math.min(cuantasAnalizar, candidatas.length) - elegidas.length;
 if (yaGuardadas > 0) console.log(`${yaGuardadas} de las mejores ya estaban analizadas: se reutilizan sin gastar créditos.`);
+let gastoBusqueda = 0;
+let presupuesto: Estado | undefined;
 for (const [i, c] of elegidas.entries()) {
   process.stdout.write(`Analizando ${i + 1}/${elegidas.length}: ${c.oferta.titulo}... `);
   try {
-    const resultado = await analizarOferta(c.oferta.texto, hojaDeVida);
+    const { resultado, usd, estado } = await analizarConPresupuesto(c.oferta.texto, hojaDeVida);
+    gastoBusqueda += usd;
+    presupuesto = estado;
     analisis.set(c.oferta.id, resultado);
     memoria = guardarEnCache(memoria, clave(c.oferta), { ofertaId: c.oferta.id, publicada: c.oferta.publicada, resultado }, ahora);
-    console.log(`${resultado.encaje} %`);
+    console.log(`${resultado.encaje} % (US$ ${usd.toFixed(3)})`);
   } catch (error) {
     console.log(`falló (${error instanceof Error ? error.message : error})`);
+    // Sin presupuesto no tiene sentido intentar las siguientes: todas fallarían igual.
+    if (error instanceof PresupuestoAgotado) {
+      console.log(`Se analizaron ${i} de ${elegidas.length}. Las demás quedan "sin analizar" en el reporte.`);
+      break;
+    }
   }
+}
+if (elegidas.length > 0) {
+  const limites = leerLimites();
+  const hoy = (presupuesto?.hoy ?? 0) + gastoBusqueda;
+  console.log(`Gasto de esta búsqueda: US$ ${gastoBusqueda.toFixed(3)} · hoy llevas US$ ${hoy.toFixed(2)} de US$ ${limites.dia.toFixed(2)}.`);
 }
 
 // 4. Reporte

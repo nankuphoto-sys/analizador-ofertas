@@ -1,16 +1,25 @@
 import "dotenv/config";
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { analizarOferta } from "./agente.js";
+import { analizarConPresupuesto } from "./agente.js";
+import { enteroEnRango } from "./argumentos.js";
 import { leerDocumento } from "./documentos.js";
+import { cargarRegistro, leerLimites, revisarPresupuesto } from "./gasto.js";
 import { puntuar, type Verificacion } from "./puntaje.js";
 
 /**
  * Evaluación: por cada casos/<nombre>.json analiza ofertas/<nombre>.txt contra la hoja de vida
  * indicada, N veces, y mide aciertos, invenciones y consistencia.
- * Uso: npm run evaluar -- 3
+ * Uso: npm run evaluar -- 3   (entre 1 y 5 repeticiones)
  */
-const repeticiones = Number(process.argv[2] ?? 3);
+const MAXIMO_REPETICIONES = 5;
+let repeticiones: number;
+try {
+  repeticiones = enteroEnRango(process.argv[2] ?? "3", "Las repeticiones", 1, MAXIMO_REPETICIONES);
+} catch (error) {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+}
 if (!process.env.ANTHROPIC_API_KEY) {
   console.error("Falta ANTHROPIC_API_KEY en .env");
   process.exit(1);
@@ -22,6 +31,21 @@ interface Caso {
 }
 
 const casos = (await readdir("casos")).filter((f) => f.endsWith(".json")).sort();
+
+// Antes de gastar nada: ¿cabe la evaluación completa en el presupuesto? Si no, mejor no empezar
+// que quedar a medias con la mitad pagada y sin resultado comparable.
+{
+  const limites = leerLimites();
+  const estado = revisarPresupuesto(await cargarRegistro(), limites);
+  const necesarios = casos.length * repeticiones;
+  const estimado = necesarios * estado.estimado;
+  const disponible = Math.min(limites.dia - estado.hoy, limites.mes - estado.mes);
+  console.log(`Evaluación: ${necesarios} análisis, unos US$ ${estimado.toFixed(2)}. Disponible hoy: US$ ${disponible.toFixed(2)}.`);
+  if (estimado > disponible) {
+    console.error("No alcanza el presupuesto para la evaluación completa. Usa menos repeticiones o sube LIMITE_USD_DIA / LIMITE_USD_MES en .env.");
+    process.exit(1);
+  }
+}
 const pct = (x: number) => `${Math.round(x * 100)} %`;
 const filas: string[] = [];
 let totalAciertos = 0;
@@ -43,7 +67,7 @@ for (const archivo of casos) {
   let rechazadas = 0;
 
   for (let i = 1; i <= repeticiones; i++) {
-    const resultado = await analizarOferta(oferta, hojaDeVida);
+    const { resultado } = await analizarConPresupuesto(oferta, hojaDeVida);
     const p = puntuar(resultado.requisitos, caso.verificaciones);
     aciertos.push(p.aciertos / p.total);
     encajes.push(resultado.encaje);

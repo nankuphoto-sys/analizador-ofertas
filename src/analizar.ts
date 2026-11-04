@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { mkdir, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
-import { analizarOferta } from "./agente.js";
+import { analizarConPresupuesto } from "./agente.js";
 import { leerDocumento } from "./documentos.js";
 import type { Resultado } from "./esquema.js";
 
@@ -39,7 +39,7 @@ function informe(r: Resultado): string {
 try {
   const inicio = Date.now();
   const [oferta, hojaDeVida] = await Promise.all([leerDocumento(rutaOferta), leerDocumento(rutaHojaDeVida)]);
-  const resultado = await analizarOferta(oferta, hojaDeVida);
+  const { resultado, usd, estado } = await analizarConPresupuesto(oferta, hojaDeVida);
   const segundos = ((Date.now() - inicio) / 1000).toFixed(1);
 
   await mkdir("salidas", { recursive: true });
@@ -47,7 +47,7 @@ try {
   await writeFile(destino, JSON.stringify(resultado, null, 2));
 
   console.log(informe(resultado));
-  console.log(`\nListo en ${segundos} s. JSON completo en ${destino}`);
+  console.log(`\nListo en ${segundos} s (US$ ${usd.toFixed(3)}; hoy llevas US$ ${(estado.hoy + usd).toFixed(2)}). JSON completo en ${destino}`);
 } catch (error) {
   const mensaje = error instanceof Error ? error.message : String(error);
   if (mensaje.includes("401") || mensaje.includes("api-key")) {

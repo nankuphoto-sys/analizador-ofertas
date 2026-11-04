@@ -3,6 +3,19 @@ import { createAgent, providerStrategy } from "langchain";
 import { AnalisisSchema, type Resultado } from "./esquema.js";
 import { crearHerramientaBusqueda, lineasDe } from "./hojaDeVida.js";
 import { huella } from "./memoria.js";
+import {
+  cargarRegistro,
+  costoUsd,
+  type Estado,
+  guardarRegistro,
+  leerLimites,
+  PresupuestoAgotado,
+  registrarGasto,
+  revisarPresupuesto,
+  RUTA_GASTO,
+  type Uso,
+  usoDeMensajes,
+} from "./gasto.js";
 import { completarResultado } from "./verificar.js";
 import * as z from "zod";
 
@@ -75,27 +88,85 @@ export const modeloActual = () => process.env.ANTHROPIC_MODEL ?? "claude-sonnet-
  */
 export const VERSION_PROMPT = huella(instrucciones("{hoy}") + JSON.stringify(z.toJSONSchema(AnalisisSchema)));
 
+/**
+ * Topes de un solo análisis, para que una oferta rara no dispare el gasto (ver docs/limite-de-gasto.md).
+ * El presupuesto por día y por mes está en src/gasto.ts.
+ */
+export const LIMITES_ANALISIS = {
+  /** Tokens máximos por respuesta del modelo (el valor que LangChain ya usaba para Sonnet 5.5, ahora explícito). */
+  tokensPorRespuesta: 16_384,
+  /** Pasos máximos del agente: cada vuelta modelo → herramienta son 2. 25 es el valor que ya usaba LangGraph. */
+  pasos: 25,
+  /** Tiempo máximo de un análisis completo, con sus reintentos. */
+  milisegundos: 180_000,
+  /** Largo máximo de los textos: más que esto casi seguro es una página pegada entera, no una oferta. */
+  caracteresOferta: 30_000,
+  caracteresHojaDeVida: 40_000,
+};
+
 export function crearAgente(hojaDeVida: string, modelo = modeloActual()) {
   const hoy = new Date().toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" });
   return createAgent({
-    model: new ChatAnthropic({ model: modelo }),
+    model: new ChatAnthropic({ model: modelo, maxTokens: LIMITES_ANALISIS.tokensPorRespuesta, maxRetries: 2 }),
     tools: [crearHerramientaBusqueda(lineasDe(hojaDeVida))],
     systemPrompt: instrucciones(hoy),
     responseFormat: providerStrategy(AnalisisSchema),
   });
 }
 
-/** Compara la oferta con la hoja de vida y devuelve el análisis verificado, con el encaje calculado. */
-export async function analizarOferta(oferta: string, hojaDeVida: string): Promise<Resultado> {
+/** Compara la oferta con la hoja de vida y devuelve el análisis verificado y lo que costó. */
+export async function analizarOfertaConUso(oferta: string, hojaDeVida: string): Promise<{ resultado: Resultado; uso: Uso }> {
   if (hojaDeVida.trim().length < 50) {
     throw new Error("La hoja de vida casi no tiene texto. Si es un PDF escaneado, usa una versión con texto.");
   }
   if (oferta.trim().length < 50) {
     throw new Error("La oferta casi no tiene texto. Copia la descripción completa del cargo.");
   }
+  // No se recorta en silencio: un texto recortado podría perder justo el requisito que importa.
+  if (oferta.length > LIMITES_ANALISIS.caracteresOferta) {
+    throw new Error(`La oferta tiene ${oferta.length} caracteres (máximo ${LIMITES_ANALISIS.caracteresOferta}). Copia solo la descripción del cargo.`);
+  }
+  if (hojaDeVida.length > LIMITES_ANALISIS.caracteresHojaDeVida) {
+    throw new Error(`La hoja de vida tiene ${hojaDeVida.length} caracteres (máximo ${LIMITES_ANALISIS.caracteresHojaDeVida}).`);
+  }
 
-  const resultado = await crearAgente(hojaDeVida).invoke({
-    messages: [{ role: "user", content: `Analiza esta oferta para el candidato:\n\n${oferta}` }],
-  });
-  return completarResultado(AnalisisSchema.parse(resultado.structuredResponse), hojaDeVida);
+  const salida = await crearAgente(hojaDeVida).invoke(
+    { messages: [{ role: "user", content: `Analiza esta oferta para el candidato:\n\n${oferta}` }] },
+    { recursionLimit: LIMITES_ANALISIS.pasos, signal: AbortSignal.timeout(LIMITES_ANALISIS.milisegundos) },
+  );
+  return {
+    resultado: completarResultado(AnalisisSchema.parse(salida.structuredResponse), hojaDeVida),
+    uso: usoDeMensajes(salida.messages),
+  };
+}
+
+/** Igual que analizarOfertaConUso, sin el uso. */
+export async function analizarOferta(oferta: string, hojaDeVida: string): Promise<Resultado> {
+  return (await analizarOfertaConUso(oferta, hojaDeVida)).resultado;
+}
+
+/**
+ * Analiza solo si cabe en el presupuesto, y anota lo que costó. Es la entrada que usan buscar, analizar y evaluar.
+ * Si el análisis falla a mitad de camino (tiempo, pasos), el gasto ya ocurrió: se anota lo estimado.
+ */
+export async function analizarConPresupuesto(
+  oferta: string,
+  hojaDeVida: string,
+  rutaRegistro = RUTA_GASTO,
+): Promise<{ resultado: Resultado; usd: number; estado: Estado }> {
+  const limites = leerLimites();
+  const registro = await cargarRegistro(rutaRegistro);
+  const estado = revisarPresupuesto(registro, limites);
+  if (!estado.permitido) throw new PresupuestoAgotado(estado.motivo ?? "límite de gasto");
+  try {
+    const { resultado, uso } = await analizarOfertaConUso(oferta, hojaDeVida);
+    // Un análisis nunca es gratis: si no llegó el uso de tokens, se anota lo estimado para que el límite siga frenando.
+    const usd = uso.entrada + uso.salida > 0 ? costoUsd(uso, modeloActual()) : estado.estimado;
+    await guardarRegistro(registrarGasto(registro, usd), rutaRegistro);
+    return { resultado, usd, estado };
+  } catch (error) {
+    const yaEmpezo = !(error instanceof Error && /casi no tiene texto|caracteres \(máximo/.test(error.message));
+    if (yaEmpezo) await guardarRegistro(registrarGasto(registro, estado.estimado), rutaRegistro);
+    throw error;
+  }
 }

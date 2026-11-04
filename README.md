@@ -127,6 +127,16 @@ Los comandos también ponen a la sesión en el papel de jefe. En Claude Code den
 
 `auditor-fuentes` entra solo cuando una fuente falla o devuelve 0 ofertas.
 
+### Límite de gasto
+
+Cada análisis cuesta dinero en la API de Anthropic, así que el gasto tiene topes:
+
+- **Por día y por mes**, en `.env`: `LIMITE_USD_DIA=2` y `LIMITE_USD_MES=20` (dólares). Antes de cada análisis se revisa que lo gastado más lo que suele costar uno no pase el límite; si no cabe, no se analiza.
+- **Por corrida**: máximo 25 análisis por búsqueda, y la evaluación acepta de 1 a 5 repeticiones y no empieza si no le alcanza el presupuesto.
+- **Por análisis**: tope de tokens, de pasos del agente, de tiempo (3 minutos) y de largo de los textos.
+
+La búsqueda y `npm run analizar` muestran cuánto costó cada análisis y cuánto llevas hoy. Pon también un límite mensual en la consola de Anthropic (*Settings → Limits*): es el único tope que no se puede saltar. Detalle: [docs/limite-de-gasto.md](docs/limite-de-gasto.md).
+
 ### Memoria entre búsquedas
 
 La búsqueda recuerda, en `memoria/memoria.json` (local, ignorado por git):

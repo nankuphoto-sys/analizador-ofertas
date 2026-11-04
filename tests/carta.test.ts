@@ -32,6 +32,11 @@ Construí un catálogo completo [[Construí el catálogo de Tiendas Aurora con R
     expect(revisarCarta(carta, HV).sinCita).toEqual([]);
   });
 
+  it("al limpiar, deja intacta la sección de dudas aunque mencione [[...]]", () => {
+    const carta = "## Carta\nHola [[Desarrolladora Frontend]].\n\n## Dudas antes de enviar\n- Quita las `[[...]]` antes de enviar.";
+    expect(revisarCarta(carta, HV).limpia).toBe("## Carta\nHola.\n\n## Dudas antes de enviar\n- Quita las `[[...]]` antes de enviar.");
+  });
+
   it("no revisa la sección de dudas, que habla de lo que falta", () => {
     const carta = "## Carta\nHola [[Desarrolladora Frontend]].\n\n## Dudas antes de enviar\n- La oferta pide 3 años con Node.js y no aparecen.";
     const r = revisarCarta(carta, HV);

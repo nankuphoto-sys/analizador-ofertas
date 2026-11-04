@@ -39,6 +39,7 @@ export function revisarCarta(texto: string, hojaDeVida: string): RevisionCarta {
     .map((f) => f.trim())
     .filter((f) => f.length > 0 && !TIENE_MARCA.test(f) && (/\d/.test(f) || tecnologiasEn(f).length > 0));
 
-  const limpia = texto.replace(/\s*\[\[[^\]]+\]\]/g, "");
+  // Solo se quitan las marcas de la carta y las respuestas: la sección de dudas puede nombrar [[...]] como texto.
+  const limpia = revisable.replace(/\s*\[\[[^\]]+\]\]/g, "") + (corte === -1 ? "" : texto.slice(corte));
   return { verificadas, faltantes, sinCita, limpia };
 }

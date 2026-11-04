@@ -23,7 +23,8 @@ Cada análisis de una oferta llama a la API de Anthropic y cuesta dinero. El pro
 - En `.env`: `LIMITE_USD_DIA` (por defecto US$ 2) y `LIMITE_USD_MES` (por defecto US$ 20).
 - Lo gastado se anota en `memoria/gasto.json` después de cada análisis, en dólares, por día y en tu hora local. Ese archivo no se sube a git.
 - **Antes** de cada análisis se revisa: lo gastado hoy (o este mes) **más** lo que suele costar un análisis no puede pasar el límite. Se frena antes de pasarse, no después.
-  - «Lo que suele costar» es el promedio de tus análisis anteriores. Mientras no hay historial se usa US$ 0,15.
+  - «Lo que suele costar» es lo mayor entre el promedio de tus análisis y el más caro de los últimos 10. Mientras no hay historial se usa US$ 0,15.
+  - Antes se reservaba solo el promedio. Una oferta larga cuesta el doble que una corta (US$ 0,21 contra 0,10 en noviembre de 2026), así que con el promedio se podía pasar del límite.
 - El costo sale de los tokens reales que reporta la API, con los precios de la tabla `PRECIOS`:
 
   | Modelo | Entrada | Salida | Lectura de caché |
@@ -49,7 +50,7 @@ Todo lo anterior protege a este proyecto. El tope que **no se puede saltar de ni
 
 ## Cuánto se puede pasar
 
-El presupuesto frena **antes** de cada análisis, así que lo más que se puede pasar es la diferencia entre lo que costó el último análisis y el promedio. En el peor caso (un análisis que agota los 25 pasos con respuestas largas) eso son unos pocos dólares, y solo una vez: el siguiente análisis ya no arranca.
+El presupuesto frena **antes** de cada análisis, y reserva lo que costó el análisis más caro de los últimos 10. Solo se pasa si un análisis cuesta más que todos esos. En el peor caso (un análisis que agota los 25 pasos con respuestas largas) eso son unos pocos dólares, y solo una vez: el siguiente análisis ya no arranca.
 
 ## Los agentes de Claude Code
 

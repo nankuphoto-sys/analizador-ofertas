@@ -17,7 +17,7 @@ import {
 } from "../src/gasto.js";
 
 const hoy = new Date(2026, 10, 4, 10, 0);
-const vacio = (): Registro => ({ version: 1, dias: {} });
+const vacio = (): Registro => ({ version: 1, dias: {}, recientes: [] });
 const carpeta = () => mkdtemp(join(tmpdir(), "gasto-"));
 
 describe("costoUsd", () => {
@@ -86,6 +86,22 @@ describe("revisarPresupuesto", () => {
     expect(e.motivo).toMatch(/límite mensual/);
   });
 
+  it("reserva el análisis más caro de los recientes, no solo el promedio", () => {
+    let r = vacio();
+    for (let i = 0; i < 8; i++) r = registrarGasto(r, 0.08, hoy);
+    r = registrarGasto(r, 0.21, hoy); // una oferta larga: 0,85 en total hoy
+    const e = revisarPresupuesto(r, limites, hoy);
+    expect(e.estimado).toBe(0.21);
+    expect(e.permitido).toBe(false); // 0,85 + 0,21 > 1, aunque con el promedio (≈0,09) cabría
+  });
+
+  it("solo mira los últimos 10 análisis", () => {
+    let r = registrarGasto(vacio(), 0.5, new Date(2026, 9, 1));
+    for (let i = 0; i < 10; i++) r = registrarGasto(r, 0.05, hoy);
+    expect(r.recientes).toHaveLength(10);
+    expect(Math.max(...r.recientes)).toBe(0.05);
+  });
+
   it("el gasto de otro mes no cuenta para este", () => {
     let r = vacio();
     for (let i = 0; i < 29; i++) r = registrarGasto(r, 0.1, new Date(2026, 9, 30, 9)); // 2,90 en octubre
@@ -99,6 +115,12 @@ describe("registro en disco", () => {
     expect(await cargarRegistro(ruta)).toEqual(vacio());
     await guardarRegistro(registrarGasto(vacio(), 0.12, hoy), ruta);
     expect((await cargarRegistro(ruta)).dias["2026-11-04"]).toEqual({ usd: 0.12, analisis: 1 });
+  });
+
+  it("lee un registro de antes, sin la lista de análisis recientes", async () => {
+    const ruta = join(await carpeta(), "gasto.json");
+    await writeFile(ruta, JSON.stringify({ version: 1, dias: { "2026-11-04": { usd: 1.75, analisis: 18 } } }));
+    expect((await cargarRegistro(ruta)).recientes).toEqual([]);
   });
 
   it("si el registro está dañado se detiene: nunca asume que no se ha gastado nada", async () => {

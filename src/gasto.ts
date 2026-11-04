@@ -71,10 +71,17 @@ export function leerLimites(env: Record<string, string | undefined> = process.en
 }
 
 const DiaSchema = z.object({ usd: z.number().nonnegative(), analisis: z.number().int().nonnegative() });
-const RegistroSchema = z.object({ version: z.literal(1), dias: z.record(z.string(), DiaSchema) });
+/** Cuántos análisis recientes se miran para reservar el más caro. */
+export const ANALISIS_RECIENTES = 10;
+const RegistroSchema = z.object({
+  version: z.literal(1),
+  dias: z.record(z.string(), DiaSchema),
+  /** Costo de los últimos análisis, del más viejo al más nuevo. Opcional: los registros anteriores no lo tenían. */
+  recientes: z.array(z.number().nonnegative()).default([]),
+});
 export type Registro = z.infer<typeof RegistroSchema>;
 
-const registroVacio = (): Registro => ({ version: 1, dias: {} });
+const registroVacio = (): Registro => ({ version: 1, dias: {}, recientes: [] });
 /** Fecha local AAAA-MM-DD: el día del límite es el del usuario, no el de UTC. */
 const diaDe = (fecha: Date) =>
   `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}-${String(fecha.getDate()).padStart(2, "0")}`;
@@ -103,13 +110,17 @@ export async function guardarRegistro(registro: Registro, ruta = RUTA_GASTO): Pr
 export function registrarGasto(registro: Registro, usd: number, ahora = new Date()): Registro {
   const dia = diaDe(ahora);
   const previo = registro.dias[dia] ?? { usd: 0, analisis: 0 };
-  return { ...registro, dias: { ...registro.dias, [dia]: { usd: previo.usd + usd, analisis: previo.analisis + 1 } } };
+  return {
+    ...registro,
+    dias: { ...registro.dias, [dia]: { usd: previo.usd + usd, analisis: previo.analisis + 1 } },
+    recientes: [...(registro.recientes ?? []), usd].slice(-ANALISIS_RECIENTES),
+  };
 }
 
 export interface Estado {
   hoy: number;
   mes: number;
-  /** Lo que suele costar un análisis: promedio del historial, o el estimado inicial si no hay. */
+  /** Lo que se reserva para el próximo análisis: el mayor entre el promedio y el más caro de los recientes. */
   estimado: number;
   permitido: boolean;
   motivo?: string;
@@ -123,7 +134,10 @@ export function revisarPresupuesto(registro: Registro, limites: { dia: number; m
   const hoy = registro.dias[hoyClave]?.usd ?? 0;
   const mes = dias.filter(([d]) => d.startsWith(mesClave)).reduce((s, [, v]) => s + v.usd, 0);
   const total = dias.reduce((s, [, v]) => ({ usd: s.usd + v.usd, n: s.n + v.analisis }), { usd: 0, n: 0 });
-  const estimado = total.n > 0 ? total.usd / total.n : COSTO_INICIAL_ESTIMADO;
+  // Se reserva lo más caro entre el promedio y el análisis más caro de los recientes: una oferta larga
+  // cuesta el doble que una corta, y reservar solo el promedio dejaba pasarse del límite.
+  const promedio = total.n > 0 ? total.usd / total.n : COSTO_INICIAL_ESTIMADO;
+  const estimado = Math.max(promedio, ...(registro.recientes ?? []));
   const dolares = (x: number) => `US$ ${x.toFixed(2)}`;
   if (hoy + estimado > limites.dia) {
     return { hoy, mes, estimado, permitido: false, motivo: `límite diario: llevas ${dolares(hoy)} de ${dolares(limites.dia)} hoy y un análisis cuesta unos ${dolares(estimado)}` };

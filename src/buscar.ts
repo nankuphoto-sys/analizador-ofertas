@@ -180,13 +180,14 @@ const elegidas = candidatas.slice(0, cuantasAnalizar).filter((c) => !analisis.ha
 const yaGuardadas = Math.min(cuantasAnalizar, candidatas.length) - elegidas.length;
 if (yaGuardadas > 0) console.log(`${yaGuardadas} de las mejores ya estaban analizadas: se reutilizan sin gastar créditos.`);
 let gastoBusqueda = 0;
-let presupuesto: Estado | undefined;
+/** Estado del presupuesto antes del primer análisis de esta búsqueda: lo de hoy sin contar esta búsqueda. */
+let antesDeBuscar: Estado | undefined;
 for (const [i, c] of elegidas.entries()) {
   process.stdout.write(`Analizando ${i + 1}/${elegidas.length}: ${c.oferta.titulo}... `);
   try {
     const { resultado, usd, estado } = await analizarConPresupuesto(c.oferta.texto, hojaDeVida);
     gastoBusqueda += usd;
-    presupuesto = estado;
+    antesDeBuscar ??= estado;
     analisis.set(c.oferta.id, resultado);
     memoria = guardarEnCache(memoria, clave(c.oferta), { ofertaId: c.oferta.id, publicada: c.oferta.publicada, resultado }, ahora);
     console.log(`${resultado.encaje} % (US$ ${usd.toFixed(3)})`);
@@ -201,7 +202,7 @@ for (const [i, c] of elegidas.entries()) {
 }
 if (elegidas.length > 0) {
   const limites = leerLimites();
-  const hoy = (presupuesto?.hoy ?? 0) + gastoBusqueda;
+  const hoy = (antesDeBuscar?.hoy ?? 0) + gastoBusqueda;
   console.log(`Gasto de esta búsqueda: US$ ${gastoBusqueda.toFixed(3)} · hoy llevas US$ ${hoy.toFixed(2)} de US$ ${limites.dia.toFixed(2)}.`);
 }
 

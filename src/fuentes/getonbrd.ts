@@ -2,12 +2,14 @@
  * Ofertas de Get on Board por su API pública (sin login): https://www.getonbrd.com/api/v0
  * Trae el texto completo de cada oferta, así se puede analizar sin abrir la página.
  */
+import type { Fuente } from "./tipos.js";
+
 const API = "https://www.getonbrd.com/api/v0";
 /** Tiempo máximo por pedido: si la API se cuelga, se corta en vez de esperar para siempre. */
 const TIMEOUT_MS = 15_000;
 
-/** Niveles de Get on Board: 1 Sin experiencia, 2 Junior, 3 Semi Senior, 4 Senior, 5 Expert. */
-export const NIVELES: Record<number, string> = { 1: "Sin experiencia", 2: "Junior", 3: "Semi Senior", 4: "Senior", 5: "Expert" };
+/** Niveles de Get on Board: 1 Sin experiencia, 2 Junior, 3 Semi Senior, 4 Senior, 5 Expert. 0 = la fuente no lo indica. */
+export const NIVELES: Record<number, string> = { 0: "No indica", 1: "Sin experiencia", 2: "Junior", 3: "Semi Senior", 4: "Senior", 5: "Expert" };
 
 export interface Oferta {
   id: string;
@@ -111,3 +113,30 @@ export async function buscarEnGetOnBoard(consulta: string, paginas = 2): Promise
   }
   return ofertas;
 }
+
+/**
+ * Get on Board como `Fuente`: busca cada palabra clave por separado.
+ * Una palabra que falla solo avisa; si fallan todas, es un problema de conexión y se lanza el error.
+ */
+export const fuenteGetOnBoard: Fuente = {
+  nombre: "getonbrd",
+  etiqueta: "Get on Board",
+  async buscar(consultas) {
+    const todas: Oferta[] = [];
+    let fallidas = 0;
+    for (const consulta of consultas) {
+      try {
+        const encontradas = await buscarEnGetOnBoard(consulta);
+        todas.push(...encontradas);
+        console.log(`  "${consulta}": ${encontradas.length} ofertas`);
+      } catch (error) {
+        fallidas++;
+        console.warn(`  No se pudo buscar "${consulta}": ${error instanceof Error ? error.message : error}`);
+      }
+    }
+    if (consultas.length > 0 && fallidas === consultas.length) {
+      throw new Error("ninguna búsqueda respondió");
+    }
+    return todas;
+  },
+};

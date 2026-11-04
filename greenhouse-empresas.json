@@ -1,0 +1,12 @@
+{
+  "_nota": "Empresas cuyas vacantes se consultan en Greenhouse. El 'token' es el nombre al final de la dirección de su página de empleo: job-boards.greenhouse.io/<token>. Para sumar una empresa, agrega una línea con su token. Estas 7 se verificaron en noviembre de 2026 con vacantes en Colombia o Latinoamérica; las vacantes cambian, así que revisa de vez en cuando.",
+  "empresas": [
+    { "token": "sezzle", "nota": "Muchas vacantes en Colombia (remoto y Bogotá): pasantías, datos, fraude. De las pocas con roles junior." },
+    { "token": "backblaze", "nota": "Remoto en Colombia, Costa Rica y México: ingeniería de software, SRE, seguridad. Casi todo semi senior o senior." },
+    { "token": "praxent", "nota": "Ingenieros de software 'LATAM' (React/Node, React/.NET, Angular/.NET), remoto desde Colombia, México o El Salvador." },
+    { "token": "wizeline", "nota": "Consultora de software con roles en Colombia, como Fullstack React y Node. Las ofertas enlazan a su propia página." },
+    { "token": "clara", "nota": "Fintech de Latinoamérica con oficina en Bogotá. Casi todo híbrido en Bogotá." },
+    { "token": "twilio", "nota": "Roles remotos en Colombia, sobre todo operaciones y soporte técnico; pocos de desarrollo." },
+    { "token": "engine", "nota": "Roles remotos 'LATAM'. Hoy solo senior y Salesforce; se deja por si abren juniors." }
+  ]
+}

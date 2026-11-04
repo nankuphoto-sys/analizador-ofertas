@@ -109,7 +109,15 @@ El proyecto incluye un equipo de subagentes y tres comandos para Claude Code en 
 xcopy equipo-agentes .claude /E /I /Y
 ```
 
-Después, en Claude Code dentro de este proyecto:
+El equipo tiene un jefe, `analizador-ofertas`: corre la búsqueda y el análisis, decide qué miembro trabaja y es el único que habla contigo. Los otros cuatro solo le responden a él, y todo lo irreversible (cambiar código, conectar o quitar fuentes, marcar ofertas, postularse) pasa por tu aprobación. Para trabajar directamente con el jefe:
+
+```bash
+claude --agent analizador-ofertas
+```
+
+Quién decide qué y qué puede tocar cada uno: [docs/jerarquia-agentes.md](docs/jerarquia-agentes.md).
+
+Los comandos también ponen a la sesión en el papel de jefe. En Claude Code dentro de este proyecto:
 
 | Comando | Qué hace |
 | --- | --- |

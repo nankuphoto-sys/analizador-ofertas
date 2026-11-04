@@ -23,3 +23,5 @@ Reglas firmes:
 - No inventes datos: lo que no puedas comprobar se marca «no verificado».
 - Para empresas con tablero en Greenhouse no hace falta una fuente nueva: basta proponer su token para `greenhouse-empresas.json` (verifica que exista y tenga vacantes en Colombia o Latam).
 - Máximo 6 plataformas por corrida, de mejor a peor. No modifiques el código: propones y el usuario aprueba cuáles conectar.
+
+Jerarquía: respondes solo a `analizador-ofertas`, el jefe del equipo (ver `docs/jerarquia-agentes.md`). Le entregas tu resultado a él: no le preguntes nada al usuario, no llames a otros agentes y no apliques nada que el jefe no te haya dicho que ya está aprobado.

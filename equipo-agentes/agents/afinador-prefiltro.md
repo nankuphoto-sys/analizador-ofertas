@@ -14,3 +14,5 @@ Entrega:
 4. Un diff propuesto, con su prueba nueva en `tests/prefiltro.test.ts`. No lo apliques: el usuario aprueba cada cambio.
 
 Cuenta con los archivos de verdad; no inventes estadísticas. Si el historial es corto, dilo y no concluyas de pocas ofertas.
+
+Jerarquía: respondes solo a `analizador-ofertas`, el jefe del equipo (ver `docs/jerarquia-agentes.md`). Le entregas tu resultado a él: no le preguntes nada al usuario, no llames a otros agentes y no apliques nada que el jefe no te haya dicho que ya está aprobado.

@@ -2,7 +2,7 @@
 description: "Busca ofertas en todas las fuentes, las filtra y resume las mejores con su encaje."
 argument-hint: [ruta/hoja-de-vida.pdf]
 ---
-Actúa como orquestador del Analizador de ofertas en este proyecto.
+Actúa como `analizador-ofertas`, el jefe del equipo (reglas en `docs/jerarquia-agentes.md`).
 
 1. Corre `npm run buscar -- $ARGUMENTS` y lee el reporte nuevo de `salidas/`. Si no di ruta de hoja de vida, pídemela.
 2. Si alguna fuente falló o trajo 0 ofertas, delega en el subagente `auditor-fuentes`.

@@ -5,16 +5,22 @@ export type Estado = (typeof ESTADOS)[number];
 
 // Sin límites numéricos (min/max): la salida estructurada nativa de Anthropic no los acepta.
 export const RequisitoSchema = z.object({
-  requisito: z.string().describe("El requisito de la oferta, resumido en pocas palabras"),
+// Las descripciones repiten las reglas del prompt (agente.ts) en corto: si cambias una, cambia la otra.
+  requisito: z
+    .string()
+    .describe('Una sola cosa comprobable de la oferta, con su nivel o cantidad si la da: "Inglés B2", "3 años con React"'),
   tipo: z
     .enum(["obligatorio", "deseable"])
-    .describe('"deseable" si la oferta dice deseable, plus, valoramos o similar; si no, "obligatorio"'),
+    .describe('"deseable" solo si la oferta lo marca como deseable, plus, nice to have o similar (regla 2); si no, "obligatorio"'),
   estado: z
     .enum(ESTADOS)
-    .describe("cumple: la hoja de vida lo prueba; parcial: prueba algo relacionado pero no lo pedido; no_cumple: no aparece"),
+    .describe(
+      "cumple: la hoja de vida lo nombra y llega al nivel pedido; parcial: lo tiene con menos nivel, sin datos de nivel, " +
+        "o tiene una variante directa (regla 4); no_cumple: todo lo demás, incluida otra tecnología distinta",
+    ),
   evidencia: z
     .string()
-    .describe("Frase copiada literalmente de la hoja de vida que lo prueba. Vacía si es no_cumple"),
+    .describe('Tramo de 3 a 15 palabras copiado letra por letra de una línea de la hoja de vida; varios tramos se separan con " / ". Obligatoria en cumple y parcial; vacía en no_cumple'),
 });
 
 /** Lo que devuelve el modelo. El encaje NO lo decide el modelo: se calcula en código. */
@@ -24,11 +30,13 @@ export const AnalisisSchema = z.object({
   requisitos: z.array(RequisitoSchema),
   palabras_clave_faltantes: z
     .array(z.string())
-    .describe("Términos técnicos que pide la oferta y que no aparecen en la hoja de vida"),
+    .describe("Nombres de tecnologías, herramientas, metodologías o certificaciones de la oferta que la búsqueda no encontró (regla 8)"),
   que_destacar: z
     .array(z.string())
-    .describe("3 a 5 consejos concretos: qué experiencia de la hoja de vida poner primero para esta oferta"),
-  advertencias: z.array(z.string()).describe("Dudas o riesgos de la postulación"),
+    .describe("3 a 5 consejos: cada uno nombra algo que ya está en la hoja de vida y qué requisito de la oferta responde (regla 9)"),
+  advertencias: z
+    .array(z.string())
+    .describe("Obligatorios que faltan, niveles o años insuficientes y datos que faltan para decidir (regla 10). Vacía si no hay"),
 });
 
 export type Requisito = z.infer<typeof RequisitoSchema>;

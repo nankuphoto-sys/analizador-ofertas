@@ -6,7 +6,8 @@
     "test": "vitest run",
     "analizar": "tsx src/analizar.ts",
     "evaluar": "tsx src/evaluar.ts",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "buscar": "tsx src/buscar.ts"
   },
   "author": "Jonathan Mena Ríos",
   "license": "MIT",
